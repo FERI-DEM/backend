@@ -40,5 +40,5 @@ $ npm run test:cov
 NODE_ENV=development
 PORT=3000
 SWAGGER_PATH=/api
-URL_PREFIX=/api
+URL_PREFIX=api
 ```
