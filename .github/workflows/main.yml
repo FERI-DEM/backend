@@ -17,3 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run test
       - run: npm run build
+      - run: npm i -g @railway/cli
+      - run: railway up
+      - env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
