@@ -1,5 +1,6 @@
 name: Nest CI
 env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
   DB_URI: ${{ secrets.DB_URI }}
   WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
   NODE_ENV: test
@@ -28,6 +29,4 @@ jobs:
 
       - name: Deploy
         run: railway up
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
