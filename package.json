@@ -21,8 +21,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "NODE_ENV=test && jest --config ./test/jest-e2e.json --detectOpenHandles",
     "test:e2e-win": "SET NODE_ENV=test && jest --config ./test/jest-e2e.json --detectOpenHandles",
-    "test-full": "npm run test && npm run test:e2e",
-    "test-full-win": "npm run test-win && npm run test:e2e-win"
+    "test:full": "npm run test && npm run test:e2e",
+    "test:full-win": "npm run test-win && npm run test:e2e-win"
   },
   "dependencies": {
     "@nestjs/axios": "^2.0.0",
