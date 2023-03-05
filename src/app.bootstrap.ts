@@ -36,15 +36,15 @@ export const bootstrapGlobalPrefix = (
 export const bootstrapGlobalPipes = (
   app: INestApplication,
 ): INestApplication => {
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 
   return app;
 };
 
 export const bootstrapSwagger = (app: INestApplication): INestApplication => {
   const config = new DocumentBuilder()
-    .setTitle('Štrom API')
-    .setDescription('Štrom API napove proizvodnjo energije elektrarne.')
+    .setTitle('SolarX API')
+    .setDescription('SolarX API napove proizvodnjo energije elektrarne.')
     .setVersion('1.0')
     .build();
 

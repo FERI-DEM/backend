@@ -1,4 +1,9 @@
 name: Nest CI
+env:
+  DB_URI: ${{ secrets.DB_URI }}
+  WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+  NODE_ENV: test
+  URL_PREFIX: /api
 
 on:
   push:
@@ -16,6 +21,7 @@ jobs:
           node-version: 16
       - run: npm ci
       - run: npm run test
+      - run: npm run test:e2e
       - run: npm run build
 
       - name: Install Railway
