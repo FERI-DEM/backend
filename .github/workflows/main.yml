@@ -30,6 +30,11 @@ jobs:
       - name: Install Railway
         run: npm i -g @railway/cli
 
+      - name: Login to railway
+        run: railway login
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
       - name: Deploy
         run: railway up
         env:
