@@ -3,7 +3,7 @@ import { EntityRepository } from '../../../common/repository/entity.repository';
 import {
   PVPowerForecast,
   PVPowerForecastDocument,
-} from '../schemas/pv-power.schemas';
+} from '../schemas/pv-power.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 

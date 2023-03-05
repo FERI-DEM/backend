@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   PVPowerForecast,
   PVPowerForecastSchema,
-} from './schemas/pv-power.schemas';
+} from './schemas/pv-power.schema';
 import { PowerForecastRepository } from './repositories/power-forecast.repository';
 
 @Module({

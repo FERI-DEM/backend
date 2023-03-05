@@ -14,8 +14,9 @@ export default () => ({
   database: {
     uri: env.get('DB_URI').required(true).asString(),
   },
-  keys: {
+  secrets: {
     openweather: env.get('WEATHER_API_KEY').required(true).asString(),
+    jwt: env.get('JWT_SECRET').required(true).default('secret').asString(),
   },
   common: {
     urlPrefix: env.get('URL_PREFIX').required(true).default('api').asString(),

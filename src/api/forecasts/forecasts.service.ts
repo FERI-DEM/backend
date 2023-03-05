@@ -16,7 +16,7 @@ export class ForecastsService {
     const { lat, lon } = data;
     try {
       const { data: response } = await this.httpService.axiosRef.get(
-        `https://pro.openweathermap.org/data/2.5/forecast/hourly?lat=${lat}&lon=${lon}&appid=${settings.keys.openweather}`,
+        `https://pro.openweathermap.org/data/2.5/forecast/hourly?lat=${lat}&lon=${lon}&appid=${settings.secrets.openweather}`,
       );
       return response;
     } catch (e) {
