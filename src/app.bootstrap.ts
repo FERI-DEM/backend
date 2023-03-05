@@ -50,6 +50,7 @@ export const bootstrapSwagger = (app: INestApplication): INestApplication => {
     .setTitle('SolarX API')
     .setDescription('SolarX API napove proizvodnjo energije elektrarne.')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
