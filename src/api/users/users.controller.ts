@@ -10,6 +10,13 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async findMe(@User('email') email: string) {
+    return await this.usersService.findByEmail(email);
+  }
+
   @Get(':email')
   async findByEmail(@Param('email') email: string) {
     return await this.usersService.findByEmail(email);
@@ -18,12 +25,5 @@ export class UsersController {
   @Post()
   async create(@Body() dto: CreateUserDto) {
     return await this.usersService.create(dto);
-  }
-
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  async findMe(@User('email') email: string) {
-    return await this.usersService.findByEmail(email);
   }
 }
