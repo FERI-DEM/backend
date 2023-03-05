@@ -1,10 +1,4 @@
 name: Nest CI
-env:
-  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-  DB_URI: ${{ secrets.DB_URI }}
-  WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
-  NODE_ENV: test
-  URL_PREFIX: /api
 
 on:
   push:
@@ -20,8 +14,17 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 16
+
       - run: npm ci
-      - run: npm run test
+
+      - name: Test
+        run: npm run test
+        env:
+          DB_URI: ${{ secrets.DB_URI }}
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+          NODE_ENV: test
+          URL_PREFIX: /api
+
       - run: npm run build
 
       - name: Install Railway
@@ -29,4 +32,6 @@ jobs:
 
       - name: Deploy
         run: railway up
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
