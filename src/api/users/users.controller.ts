@@ -1,7 +1,6 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { User } from '../../common/decorators';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -20,10 +19,5 @@ export class UsersController {
   @Get(':email')
   async findByEmail(@Param('email') email: string) {
     return await this.usersService.findByEmail(email);
-  }
-
-  @Post()
-  async create(@Body() dto: CreateUserDto) {
-    return await this.usersService.create(dto);
   }
 }

@@ -12,8 +12,4 @@ export class UserRepository extends EntityRepository<UserDocument> {
   ) {
     super(entityModel);
   }
-
-  async findByEmail(email: string): Promise<UserDocument | null> {
-    return this.entityModel.findOne({ email }).exec();
-  }
 }
