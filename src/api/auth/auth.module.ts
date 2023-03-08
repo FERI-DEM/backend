@@ -15,6 +15,7 @@ import { LoginValidationMiddleware } from './middleware';
     PassportModule,
     JwtModule.register({
       secret: settings.secrets.jwt,
+      signOptions: { expiresIn: '1d' },
     }),
   ],
   controllers: [AuthController],

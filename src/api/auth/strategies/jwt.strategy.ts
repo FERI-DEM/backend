@@ -7,8 +7,7 @@ import settings from '../../../app.settings';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      // TODO set to false in production
-      ignoreExpiration: true,
+      ignoreExpiration: false,
       secretOrKey: settings.secrets.jwt,
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     });
