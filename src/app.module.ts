@@ -7,7 +7,6 @@ import configuration from './common/config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './api/users/users.module';
 import { AuthModule } from './api/auth/auth.module';
-import { CommonModule } from './common/common.module';
 import { OrganizationsModule } from './api/organizations/organizations.module';
 
 @Module({
@@ -28,7 +27,6 @@ import { OrganizationsModule } from './api/organizations/organizations.module';
     UsersModule,
     OrganizationsModule,
     ForecastsModule,
-    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

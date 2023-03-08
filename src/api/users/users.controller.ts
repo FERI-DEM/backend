@@ -27,7 +27,7 @@ export class UsersController {
     try {
       return await this.usersService.findById(id);
     } catch (e) {
-      throw new HttpException('User not found', 404);
+      throw new HttpException(e.message, 404);
     }
   }
 

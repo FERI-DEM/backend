@@ -25,6 +25,8 @@ jobs:
           WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
           NODE_ENV: test
           URL_PREFIX: /api
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SENTRY_ENABLED: false
 
       - run: npm run build
 
