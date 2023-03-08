@@ -17,6 +17,7 @@ const settings = {
   secrets: {
     openweather: env.get('WEATHER_API_KEY').required(true).asString(),
     jwt: env.get('JWT_SECRET').required(true).default('secret').asString(),
+    sentry: env.get('SENTRY_DSN').required(true).asString(),
   },
   common: {
     urlPrefix: env.get('URL_PREFIX').required(true).default('api').asString(),
