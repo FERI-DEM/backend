@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Exclude } from 'class-transformer';
+import { Role } from '../../../common/types';
 
 @Schema({ timestamps: true, collection: 'users' })
 export class User extends Document {
@@ -12,6 +12,13 @@ export class User extends Document {
 
   @Prop({ type: String, required: true })
   email: string;
+
+  @Prop({
+    type: String,
+    default: Role.BASIC_USER,
+    enum: Object.values(Role),
+  })
+  role: Role;
 
   @Prop({ type: String, required: true })
   password: string;

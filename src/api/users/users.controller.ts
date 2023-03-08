@@ -1,4 +1,10 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { User } from '../../common/decorators';
@@ -16,7 +22,16 @@ export class UsersController {
     return await this.usersService.findByEmail(email);
   }
 
-  @Get(':email')
+  @Get(':id')
+  async findById(@Param('id') id: string) {
+    try {
+      return await this.usersService.findById(id);
+    } catch (e) {
+      throw new HttpException('User not found', 404);
+    }
+  }
+
+  @Get('email/:email')
   async findByEmail(@Param('email') email: string) {
     return await this.usersService.findByEmail(email);
   }

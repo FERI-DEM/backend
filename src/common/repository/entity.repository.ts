@@ -9,7 +9,6 @@ export abstract class EntityRepository<T extends Document> {
   ): Promise<T | null> {
     return this.entityModel
       .findOne(entityFilterQuery, {
-        _id: 0,
         __v: 0,
         ...projection,
       })
@@ -18,6 +17,14 @@ export abstract class EntityRepository<T extends Document> {
 
   async findOne(entityFilterQuery: FilterQuery<T>): Promise<T | null> {
     return await this.entityModel.findOne(entityFilterQuery).exec();
+  }
+
+  async findById(id: string): Promise<T | null> {
+    return await this.entityModel.findById(id).exec();
+  }
+
+  async findAll(entityFilterQuery: FilterQuery<T>): Promise<T[]> {
+    return await this.entityModel.find(entityFilterQuery).exec();
   }
 
   async create(createEntityData: unknown): Promise<T> {
