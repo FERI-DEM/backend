@@ -6,17 +6,27 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   PVPowerForecast,
   PVPowerForecastSchema,
-} from './schemas/pv-power.schema';
-import { PowerForecastRepository } from './repositories/power-forecast.repository';
+  SolarRadiation,
+  SolarRadiationSchema,
+} from './schemas';
+import {
+  PowerForecastRepository,
+  SolarRadiationForecastRepository,
+} from './repositories';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: PVPowerForecast.name, schema: PVPowerForecastSchema },
+      { name: SolarRadiation.name, schema: SolarRadiationSchema },
     ]),
     HttpModule,
   ],
-  providers: [ForecastsService, PowerForecastRepository],
+  providers: [
+    ForecastsService,
+    PowerForecastRepository,
+    SolarRadiationForecastRepository,
+  ],
   controllers: [ForecastsController],
 })
 export class ForecastsModule {}

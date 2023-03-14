@@ -3,13 +3,17 @@ import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { PvPowerDto, SolarRadiationDto, WeatherForecastDto } from './dto';
 import settings from '../../app.settings';
-import { PowerForecastRepository } from './repositories/power-forecast.repository';
+import {
+  PowerForecastRepository,
+  SolarRadiationForecastRepository,
+} from './repositories';
 
 @Injectable()
 export class ForecastsService {
   constructor(
     private readonly httpService: HttpService,
     private readonly powerForecastRep: PowerForecastRepository,
+    private readonly solarRadiationRep: SolarRadiationForecastRepository,
   ) {}
 
   async getWeather(data: WeatherForecastDto) {
@@ -26,47 +30,12 @@ export class ForecastsService {
   }
 
   async getSolarRadiation(data: SolarRadiationDto) {
-    return {
-      coord: {
-        lon: data.lon,
-        lat: data.lat,
-      },
-      list: [
-        {
-          radiation: {
-            ghi: 199.52,
-            dni: 2,
-            dhi: 197.94,
-            ghi_cs: 798.07,
-            dni_cs: 877.92,
-            dhi_cs: 113.36,
-          },
-          dt: 1627905600,
-        },
-        {
-          radiation: {
-            ghi: 206.68,
-            dni: 2.27,
-            dhi: 204.83,
-            ghi_cs: 826.71,
-            dni_cs: 885.47,
-            dhi_cs: 114.93,
-          },
-          dt: 1627909200,
-        },
-        {
-          radiation: {
-            ghi: 213.84,
-            dni: 2.54,
-            dhi: 211.72,
-            ghi_cs: 855.35,
-            dni_cs: 893.02,
-            dhi_cs: 116.5,
-          },
-          dt: 1627912800,
-        },
-      ],
-    };
+    const { lat, lon } = data;
+    const { data: response } = await this.httpService.axiosRef.get(
+      `https://api.solcast.com.au/world_radiation/estimated_actuals?latitude=-${lat}&longitude=${lon}&hours=168&api_key=${settings.secrets.solcast}`,
+    );
+
+    return await this.solarRadiationRep.create(response);
   }
 
   async;
@@ -74,7 +43,7 @@ export class ForecastsService {
   async getPVPower(data: PvPowerDto) {
     const { lat, lon, dec, az, kwp } = data;
     const date = new Date();
-    date.setHours(date.getHours() - 6);
+    date.setHours(date.getHours() - 2);
 
     const forecast = await this.powerForecastRep.findOne({
       'message.info.latitude': lat,

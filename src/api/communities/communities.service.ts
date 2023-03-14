@@ -1,19 +1,19 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { OrganizationsRepository } from './repository/organizations.repository';
-import { CreateOrganizationDto } from './dto';
+import { CreateCommunityDto } from './dto';
 import { UsersService } from '../users/users.service';
 import { Role } from '../../common/types';
+import { CommunityRepository } from './repository/community.repository';
 
 @Injectable()
-export class OrganizationsService {
+export class CommunitiesService {
   constructor(
-    private readonly organizationsRepository: OrganizationsRepository,
+    private readonly communityRepository: CommunityRepository,
     private readonly usersService: UsersService,
   ) {}
 
-  async findOrganizationByUser(userId: string) {
-    //TODO: should return array of organizations
-    const org = await this.organizationsRepository.find({
+  async findCommunityByUser(userId: string) {
+    //TODO: should return array of communities
+    const org = await this.communityRepository.find({
       membersIds: { $in: [userId] },
     });
     if (!org) {
@@ -22,9 +22,9 @@ export class OrganizationsService {
     return org;
   }
 
-  async create(data: CreateOrganizationDto & { adminId: string }) {
+  async create(data: CreateCommunityDto & { adminId: string }) {
     // TODO: use transaction
-    const org = await this.organizationsRepository.create({
+    const org = await this.communityRepository.create({
       ...data,
       membersIds: [data.adminId],
     });
@@ -39,7 +39,7 @@ export class OrganizationsService {
 
   async addMember(memberId: string, organizationId: string) {
     // TODO: add validation if member already in organization and if it is called by admin
-    return await this.organizationsRepository.findOneAndUpdate(
+    return await this.communityRepository.findOneAndUpdate(
       { _id: organizationId },
       { $push: { membersIds: memberId } },
     );
@@ -47,7 +47,7 @@ export class OrganizationsService {
 
   async removeMember(memberId: string, organizationId: string) {
     // TODO: add validation, admin cant remove himself
-    return await this.organizationsRepository.findOneAndUpdate(
+    return await this.communityRepository.findOneAndUpdate(
       { _id: organizationId },
       { $pull: { membersIds: memberId } },
     );
@@ -55,7 +55,7 @@ export class OrganizationsService {
 
   async delete(organizationId: string, adminId: string): Promise<boolean> {
     // TODO: add validation
-    const deleted = await this.organizationsRepository.findOneAndDelete({
+    const deleted = await this.communityRepository.findOneAndDelete({
       _id: organizationId,
     });
     if (!deleted) {

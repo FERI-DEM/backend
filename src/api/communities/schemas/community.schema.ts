@@ -2,8 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 import { User as Member } from '../../users/schemas/user.schema';
 
-@Schema({ timestamps: true, collection: 'organizations' })
-export class Organization {
+@Schema({ timestamps: true, collection: 'communities' })
+export class Community {
   @Prop({ type: String, required: true })
   name: string;
 
@@ -17,5 +17,5 @@ export class Organization {
   adminId: string;
 }
 
-export type OrganizationDocument = Organization & Document;
-export const OrganizationSchema = SchemaFactory.createForClass(Organization);
+export type CommunityDocument = Community & Document;
+export const CommunitySchema = SchemaFactory.createForClass(Community);
