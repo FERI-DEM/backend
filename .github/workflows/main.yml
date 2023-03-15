@@ -1,4 +1,4 @@
-name: Nest CI
+name: Nest CI/CD
 
 on:
   push:
