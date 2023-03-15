@@ -33,12 +33,3 @@ jobs:
           SOLCAST_API_KEY: ${{ secrets.SOLCAST_API_KEY }}
 
       - run: npm run build
-
-      - name: Install Railway
-        run: npm i -g @railway/cli
-
-      - name: Deploy
-        run: railway up --detach
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
