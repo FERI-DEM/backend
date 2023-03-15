@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDocument } from './schemas/user.schema';
-import { hash } from '../../common/utils';
 import { Role } from '../../common/types';
 
 @Injectable()
@@ -22,12 +21,7 @@ export class UsersService {
   }
 
   async create(data: CreateUserDto) {
-    const { password } = data;
-    const hashedPassword = await hash(password);
-    return await this.userRepository.create({
-      ...data,
-      password: hashedPassword,
-    });
+    return await this.userRepository.create(data);
   }
 
   async changeRole(id: string, role: Role) {
