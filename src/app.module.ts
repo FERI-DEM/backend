@@ -6,7 +6,6 @@ import { ForecastsModule } from './api/forecasts/forecasts.module';
 import configuration from './common/config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './api/users/users.module';
-import { AuthModule } from './api/auth/auth.module';
 import { CommunitiesModule } from './api/communities/communities.module';
 import { CommonModule } from './common/common.module';
 import { PowerPlantsModule } from './api/power-plants/power-plants.module';
@@ -25,7 +24,6 @@ import { PowerPlantsModule } from './api/power-plants/power-plants.module';
       }),
       inject: [ConfigService],
     }),
-    AuthModule,
     UsersModule,
     PowerPlantsModule,
     CommunitiesModule,

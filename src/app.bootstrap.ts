@@ -31,10 +31,6 @@ export const bootstrapGlobalPrefix = (
         path: 'health',
         method: RequestMethod.GET,
       },
-      {
-        path: 'auth/login',
-        method: RequestMethod.POST,
-      },
     ],
   });
 
