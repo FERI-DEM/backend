@@ -39,6 +39,22 @@ $ npm run test:cov
 ```bash
 NODE_ENV=development
 PORT=3000
-SWAGGER_PATH=/api
-URL_PREFIX=api
+URL_PREFIX=/api
+DB_URI=mongodb://root:root@localhost:27017
+WEATHER_API_KEY=weather_api_key
+SENTRY_DSN=dns
+SENTRY_ENABLED=false
+SOLCAST_API_KEY=abc
+
+# firebase service account
+FIREBASE_SERVICE_ACCOUNT=service_account
+FIREBASE_PROJECT_ID=solarcast-123
+FIREBASE__PRIVATE_KEY_ID=123
+FIREBASE_PRIVATE_KEY={"privateKey": "-----BEGIN PRIVATE KEY-----\abcdef\n-----END PRIVATE KEY-----\n"}
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk@solarcast.com
+FIREBASE_CLIENT_ID=123
+FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
+FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
+FIREBASE_AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
+FIREBASE_CLIENT_X509_CERT_URL=https://www.google
 ```

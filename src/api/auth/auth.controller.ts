@@ -11,9 +11,4 @@ export class AuthController {
   async login() {
     return 'login';
   }
-
-  @Post('register')
-  async register() {
-    return 'register';
-  }
 }

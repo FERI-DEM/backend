@@ -32,11 +32,7 @@ export const bootstrapGlobalPrefix = (
         method: RequestMethod.GET,
       },
       {
-        path: 'auth/local/login',
-        method: RequestMethod.POST,
-      },
-      {
-        path: 'auth/register',
+        path: 'auth/login',
         method: RequestMethod.POST,
       },
     ],
