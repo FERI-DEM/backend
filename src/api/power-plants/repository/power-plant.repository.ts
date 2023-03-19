@@ -1,22 +1,45 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../../users/schemas/user.schema';
+import { CreatePowerPlantDto, UpdatePowerPlantDto } from '../dto';
 import { Model } from 'mongoose';
-import { CreatePowerPlantDto } from '../dto/create-power-plant.dto';
+import { Calibration } from '../types';
 
+// TODO: findOneAndUpdate returns the old document, not the new one
 @Injectable()
 export class PowerPlantRepository {
   constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
 
   async createPowerPlant(userId: string, data: CreatePowerPlantDto) {
-    return await this.model.updateOne(
+    return await this.model.findOneAndUpdate(
       { _id: userId },
       { $push: { powerPlants: data } },
     );
   }
 
+  async createCalibration(userId: string, powerPlantId, data: Calibration) {
+    return await this.model.findOneAndUpdate(
+      { _id: userId, 'powerPlants._id': powerPlantId },
+      { $push: { 'powerPlants.$.calibration': data } },
+    );
+  }
+
+  async savePredictedProduction(
+    userId: string,
+    powerPlantId,
+    predictedPower: number,
+  ) {
+    return await this.model.findOneAndUpdate(
+      {
+        _id: userId,
+        'powerPlants._id': powerPlantId,
+      },
+      { $set: { 'powerPlants.$.predictedProduction': predictedPower } },
+    );
+  }
+
   async deletePowerPlant(userId: string, powerPlantId: string) {
-    return await this.model.updateOne(
+    return await this.model.findOneAndUpdate(
       { _id: userId },
       { $pull: { powerPlants: { _id: powerPlantId } } },
     );
@@ -36,11 +59,22 @@ export class PowerPlantRepository {
   async updatePowerPlant(
     userId: string,
     powerPlantId: string,
-    data: CreatePowerPlantDto,
+    data: UpdatePowerPlantDto,
   ) {
-    return await this.model.updateOne(
-      { _id: userId, 'powerPlants._id': powerPlantId },
-      { $set: { 'powerPlants.$': data } },
+    const { latitude, longitude, displayName } = data;
+    return await this.model.findOneAndUpdate(
+      {
+        _id: userId,
+        'powerPlants._id': powerPlantId,
+      },
+      {
+        $set: {
+          'powerPlants.$.displayName': displayName,
+          'powerPlants.$.latitude': latitude,
+          'powerPlants.$.longitude': longitude,
+        },
+      },
+      { projection: { powerPlants: 1 } },
     );
   }
 }

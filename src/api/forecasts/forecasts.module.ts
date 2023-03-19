@@ -28,5 +28,6 @@ import {
     SolarRadiationForecastRepository,
   ],
   controllers: [ForecastsController],
+  exports: [ForecastsService],
 })
 export class ForecastsModule {}

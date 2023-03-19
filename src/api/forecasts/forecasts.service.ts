@@ -7,6 +7,8 @@ import {
   PowerForecastRepository,
   SolarRadiationForecastRepository,
 } from './repositories';
+import { SolarRadiation } from './schemas';
+import { Logger as NestLogger } from '@nestjs/common';
 
 @Injectable()
 export class ForecastsService {
@@ -29,19 +31,39 @@ export class ForecastsService {
     }
   }
 
-  async getSolarRadiation(data: SolarRadiationDto) {
+  async getSolarRadiation(data: SolarRadiationDto): Promise<SolarRadiation> {
     const { lat, lon } = data;
-    const { data: response } = await this.httpService.axiosRef.get(
-      `https://api.solcast.com.au/world_radiation/estimated_actuals?latitude=-${lat}&longitude=${lon}&hours=168&api_key=${settings.secrets.solcast}`,
-    );
 
-    return await this.solarRadiationRep.create(response);
+    const date = new Date();
+    date.setHours(date.getHours() - 6);
+
+    const forecast = await this.solarRadiationRep.findOne({
+      latitude: lat,
+      longitude: lon,
+      createdAt: { $gte: date },
+    });
+
+    if (!forecast) {
+      NestLogger.log('Fetching new solar radiation forecast');
+      const { data: response } = await this.httpService.axiosRef.get(
+        `https://api.solcast.com.au/world_radiation/forecasts?latitude=-${lat}&longitude=${lon}&hours=168&api_key=${settings.secrets.solcast}`,
+      );
+      await this.solarRadiationRep.create({
+        ...response,
+        latitude: lat,
+        longitude: lon,
+      });
+      return response;
+    }
+
+    return forecast;
   }
 
   async;
 
   async getPVPower(data: PvPowerDto) {
     const { lat, lon, dec, az, kwp } = data;
+
     const date = new Date();
     date.setHours(date.getHours() - 2);
 

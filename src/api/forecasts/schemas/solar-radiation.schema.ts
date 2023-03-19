@@ -12,7 +12,6 @@ class EstimatedActuals {
   ebh: number;
   @Prop({ type: Number })
   cloud_opacity: number;
-
   @Prop({ type: String })
   period_end: string;
   @Prop({ type: String })
@@ -22,7 +21,11 @@ class EstimatedActuals {
 @Schema({ timestamps: true, collection: 'solar-radiation' })
 export class SolarRadiation {
   @Prop({ type: Array })
-  estimated_actuals: EstimatedActuals[];
+  forecasts: EstimatedActuals[];
+  @Prop({ type: Number })
+  latitude: number;
+  @Prop({ type: Number })
+  longitude: number;
 }
 
 export type SolarRadiationDocument = SolarRadiation & Document;

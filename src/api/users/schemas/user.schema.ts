@@ -1,7 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { Role } from '../../../common/types';
-import { PowerPlant } from '../../power-plants/schemas/power-plant.schema';
+import {
+  PowerPlant,
+  PowerPlantSchema,
+} from '../../power-plants/schemas/power-plant.schema';
 
 @Schema({ timestamps: true, collection: 'users' })
 export class User extends Document {
@@ -21,7 +24,7 @@ export class User extends Document {
   })
   role: Role;
 
-  @Prop({ type: Array, default: [] })
+  @Prop({ type: [PowerPlantSchema], default: [] })
   powerPlants: PowerPlant[];
 }
 
