@@ -59,8 +59,6 @@ export class ForecastsService {
     return forecast;
   }
 
-  async;
-
   async getPVPower(data: PvPowerDto) {
     const { lat, lon, dec, az, kwp } = data;
 
