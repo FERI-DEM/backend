@@ -92,7 +92,7 @@ export class PowerPlantsService {
     );
   }
 
-  async predict(userId: string, powerPlantId: string) {
+  async predict(userId: string, powerPlantId: string): Promise<number> {
     const { powerPlants } = await this.findOne(userId, powerPlantId);
     const { calibration, latitude, longitude }: PowerPlant = powerPlants[0];
 

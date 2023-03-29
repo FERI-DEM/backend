@@ -20,11 +20,11 @@ export class UsersService {
     return user;
   }
 
-  async create(data: CreateUserDto) {
+  async create(data: CreateUserDto): Promise<UserDocument> {
     return await this.userRepository.create(data);
   }
 
-  async changeRole(id: string, role: Role) {
+  async changeRole(id: string, role: Role): Promise<UserDocument> {
     return await this.userRepository.findOneAndUpdate(
       {
         _id: id,

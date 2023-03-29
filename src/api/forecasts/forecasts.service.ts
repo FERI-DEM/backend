@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { AxiosError } from 'axios';
+import type { AxiosError, AxiosResponse } from 'axios';
 import { PvPowerDto, SolarRadiationDto, WeatherForecastDto } from './dto';
 import settings from '../../app.settings';
 import {
   PowerForecastRepository,
   SolarRadiationForecastRepository,
 } from './repositories';
-import { SolarRadiation } from './schemas';
+import { PVPowerForecastDocument, SolarRadiation } from './schemas';
 import { Logger as NestLogger } from '@nestjs/common';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class ForecastsService {
     private readonly solarRadiationRep: SolarRadiationForecastRepository,
   ) {}
 
-  async getWeather(data: WeatherForecastDto) {
+  async getWeather(data: WeatherForecastDto): Promise<AxiosResponse> {
     const { lat, lon } = data;
     try {
       const { data: response } = await this.httpService.axiosRef.get(
@@ -59,7 +59,7 @@ export class ForecastsService {
     return forecast;
   }
 
-  async getPVPower(data: PvPowerDto) {
+  async getPVPower(data: PvPowerDto): Promise<PVPowerForecastDocument> {
     const { lat, lon, dec, az, kwp } = data;
 
     const date = new Date();
