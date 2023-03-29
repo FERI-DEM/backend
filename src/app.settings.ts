@@ -1,5 +1,12 @@
 import * as env from 'env-var';
 import { Env } from './common/constants/env.constants';
+import * as dotenv from 'dotenv';
+
+const currEnv = process.env.NODE_ENV?.trim() || Env.DEVELOPMENT;
+
+dotenv.config({
+  path: `${process.cwd()}/.env.${currEnv}`,
+});
 
 const settings = {
   environment: env

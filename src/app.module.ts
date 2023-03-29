@@ -13,8 +13,8 @@ import { PowerPlantsModule } from './api/power-plants/power-plants.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: `${process.cwd()}/.env.${process.env.NODE_ENV}`,
       isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV.trim()}`,
       load: [configuration],
     }),
     MongooseModule.forRootAsync({
