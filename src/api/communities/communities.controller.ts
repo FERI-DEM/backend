@@ -32,16 +32,26 @@ export class CommunitiesController {
   async addMember(
     @Body() { memberId }: AddMemberDto,
     @Param('communityId') communityId: string,
+    @User('id') adminId: string,
   ) {
-    return await this.communitiesService.addMember(memberId, communityId);
+    return await this.communitiesService.addMember(
+      memberId,
+      communityId,
+      adminId,
+    );
   }
 
   @Delete('remove/:communityId/:memberId')
   async deleteMember(
     @Param('memberId') memberId: string,
     @Param('communityId') communityId: string,
+    @User('id') adminId: string,
   ) {
-    return await this.communitiesService.removeMember(memberId, communityId);
+    return await this.communitiesService.removeMember(
+      memberId,
+      communityId,
+      adminId,
+    );
   }
 
   @Delete(':communityId')
@@ -50,5 +60,13 @@ export class CommunitiesController {
     @User('id') adminId: string,
   ) {
     return await this.communitiesService.delete(communityId, adminId);
+  }
+
+  @Delete('leave/:communityId')
+  async leave(
+    @Param('communityId') communityId: string,
+    @User('id') userId: string,
+  ) {
+    return await this.communitiesService.leave(userId, communityId);
   }
 }

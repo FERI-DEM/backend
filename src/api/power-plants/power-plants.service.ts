@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PowerPlantRepository } from './repository/power-plant.repository';
 import {
   CreateCalibrationDto,
@@ -34,7 +39,7 @@ export class PowerPlantsService {
     );
 
     if (!powerPlant) {
-      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('Power plant not found');
     }
     return powerPlant;
   }
