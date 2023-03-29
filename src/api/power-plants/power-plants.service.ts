@@ -11,7 +11,7 @@ import {
   UpdatePowerPlantDto,
 } from './dto';
 import { ForecastsService } from '../forecasts/forecasts.service';
-import { roundUpDate } from '../../common/utils';
+import { roundUpDate } from '@/common/utils';
 import { PowerPlant } from './schemas/power-plant.schema';
 
 @Injectable()

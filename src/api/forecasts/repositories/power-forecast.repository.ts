@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityRepository } from '../../../common/repository/entity.repository';
+import { EntityRepository } from '@/common/repository/entity.repository';
 import { PVPowerForecast, PVPowerForecastDocument } from '../schemas';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';

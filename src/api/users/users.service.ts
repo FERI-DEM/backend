@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDocument } from './schemas/user.schema';
-import { Role } from '../../common/types';
+import { Role } from '@/common/types';
 
 @Injectable()
 export class UsersService {
