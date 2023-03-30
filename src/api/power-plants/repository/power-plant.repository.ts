@@ -5,7 +5,6 @@ import { CreatePowerPlantDto, UpdatePowerPlantDto } from '../dto';
 import { Model } from 'mongoose';
 import { Calibration } from '../types';
 
-// TODO: findOneAndUpdate returns the old document, not the new one
 @Injectable()
 export class PowerPlantRepository {
   constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
@@ -76,7 +75,7 @@ export class PowerPlantRepository {
           'powerPlants.$.longitude': longitude,
         },
       },
-      { projection: { powerPlants: 1 } },
+      { projection: { powerPlants: 1 }, new: true },
     );
   }
 }

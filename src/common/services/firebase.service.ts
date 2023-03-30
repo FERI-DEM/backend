@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { getAuth, Auth } from 'firebase-admin/auth';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
 import {
   initializeApp,
   getApps,
   App,
   ServiceAccount,
 } from 'firebase-admin/app';
-
 import settings from '../../app.settings';
 import { credential } from 'firebase-admin';
 
@@ -20,6 +20,7 @@ const serviceAccount: ServiceAccount = {
 export class FirebaseService {
   public readonly app: App;
   public readonly auth: Auth;
+  public readonly db: Firestore;
 
   // TODO: should use different app credentials for different environments
   constructor() {
@@ -32,5 +33,6 @@ export class FirebaseService {
     }
 
     this.auth = getAuth(this.app);
+    this.db = getFirestore(this.app);
   }
 }
