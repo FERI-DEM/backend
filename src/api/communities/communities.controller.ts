@@ -10,7 +10,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AddMemberDto, CreateCommunityDto } from './dto';
 import { CommunitiesService } from './communities.service';
-import { User } from '@/common/decorators';
+import { User } from '../../common/decorators';
 
 @ApiTags('communities')
 @ApiBearerAuth()

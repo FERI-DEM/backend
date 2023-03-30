@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateCommunityDto } from './dto';
 import { UsersService } from '../users/users.service';
-import { Role } from '@/common/types';
+import { Role } from '../../common/types';
 import { CommunityRepository } from './repository/community.repository';
 import { CommunityDocument } from './schemas/community.schema';
 

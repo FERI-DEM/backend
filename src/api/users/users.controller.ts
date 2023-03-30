@@ -1,7 +1,7 @@
 import { Controller, Get, HttpException, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { User } from '@/common/decorators';
+import { User } from '../../common/decorators';
 
 @ApiTags('users')
 @Controller('users')
