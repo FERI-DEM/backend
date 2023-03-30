@@ -4,13 +4,13 @@ export enum NotificationType {
 }
 
 /*
-  @to - user id
-  @from - user id
+  @to - userId
+  @from - userId
  */
 export interface Notification<T> {
+  id: string;
   to: string;
   from: string;
-  id: string;
   type: NotificationType;
   data: T;
   read: boolean;

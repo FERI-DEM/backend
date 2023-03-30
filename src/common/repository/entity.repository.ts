@@ -1,7 +1,9 @@
 import { Document, FilterQuery, Model, UpdateQuery } from 'mongoose';
+import settings from '../../app.settings';
+import { Env } from '../constants/env.constants';
 
 export abstract class EntityRepository<T extends Document> {
-  constructor(protected readonly entityModel: Model<T>) {}
+  protected constructor(protected readonly entityModel: Model<T>) {}
 
   async find(
     entityFilterQuery: FilterQuery<T>,
@@ -52,5 +54,12 @@ export abstract class EntityRepository<T extends Document> {
   async deleteMany(entityFilterQuery: FilterQuery<T>): Promise<boolean> {
     const deleteResult = await this.entityModel.deleteMany(entityFilterQuery);
     return deleteResult.deletedCount >= 1;
+  }
+
+  async dropCollection(): Promise<boolean> {
+    if (settings.environment !== Env.TEST) {
+      throw new Error('Cannot drop collection outside of test environment');
+    }
+    return await this.entityModel.collection.drop();
   }
 }

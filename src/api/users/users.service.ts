@@ -9,7 +9,7 @@ export class UsersService {
   constructor(private readonly userRepository: UserRepository) {}
 
   async findByEmail(email: string): Promise<UserDocument> {
-    return await this.userRepository.find({ email });
+    return await this.userRepository.findOne({ email });
   }
 
   async findById(id: string): Promise<UserDocument> {
@@ -25,7 +25,7 @@ export class UsersService {
   }
 
   async changeRole(id: string, role: Role): Promise<UserDocument> {
-    return await this.userRepository.findOneAndUpdate(
+    const user = await this.userRepository.findOneAndUpdate(
       {
         _id: id,
       },
@@ -35,5 +35,9 @@ export class UsersService {
         },
       },
     );
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }

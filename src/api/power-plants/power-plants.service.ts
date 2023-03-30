@@ -22,6 +22,7 @@ export class PowerPlantsService {
   ) {}
 
   async create(userId: string, data: CreatePowerPlantDto) {
+    // TODO: add role to user
     return await this.powerPlantRepository.createPowerPlant(userId, data);
   }
 
