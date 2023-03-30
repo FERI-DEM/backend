@@ -27,11 +27,11 @@ describe('UsersService test', () => {
   });
 
   afterAll(async () => {
+    await userRepository.dropCollection();
     if (app) {
       app.flushLogs();
       await app.close();
     }
-    await userRepository.dropCollection();
   });
 
   it('should be defined', async () => {
@@ -87,10 +87,7 @@ describe('UsersService test', () => {
 
   it('should throw an error if user is not found by id', async () => {
     try {
-      const res = await userService.changeRole(
-        '64064ccd62bdeec513ad2f0b',
-        Role.ADMIN,
-      );
+      await userService.changeRole('64064ccd62bdeec513ad2f0b', Role.ADMIN);
     } catch (error) {
       expect(error.message).toEqual('User not found');
     }
