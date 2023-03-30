@@ -80,6 +80,13 @@ export class PowerPlantsService {
       (f) => f.period_end.split('.')[0] === date.split('.')[0],
     );
 
+    if (ghi <= 0) {
+      throw new HttpException(
+        'Please calibrate when there is sun',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     // TODO: who decides the date frontend or backend?
     return await this.powerPlantRepository.createCalibration(
       userId,
@@ -92,7 +99,10 @@ export class PowerPlantsService {
     );
   }
 
-  async predict(userId: string, powerPlantId: string): Promise<number> {
+  async predict(
+    userId: string,
+    powerPlantId: string,
+  ): Promise<{ date: string; power: number }[]> {
     const { powerPlants } = await this.findOne(userId, powerPlantId);
     const { calibration, latitude, longitude }: PowerPlant = powerPlants[0];
 
@@ -103,22 +113,59 @@ export class PowerPlantsService {
       );
     }
 
-    const forecast = await this.forecastService.getSolarRadiation({
+    const { forecasts } = await this.forecastService.getSolarRadiation({
       lat: latitude,
       lon: longitude,
     });
 
-    // last calibration
+    if (!forecasts) {
+      throw new HttpException(
+        'Could not retrieve data for forecasts',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    // TODO: last calibration or average
     const { power, radiation } = calibration[calibration.length - 1];
-    const currentRadiation = forecast.forecasts[0].ghi;
     // Prediction for next 30 min
+
+    if (radiation <= 0) {
+      throw new HttpException(
+        'Radiation can not be 0 or lower',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    if (power <= 0) {
+      throw new HttpException(
+        'Power can not be 0 or lower',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
     const coefficient = power / radiation;
-    const predictedPower = coefficient * currentRadiation;
+
+    if (coefficient <= 0) {
+      throw new HttpException(
+        'Coefficient can not be 0 or lower',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    // predicted values for 7 days
+    const predictedValues = forecasts.map((f) => {
+      const predictedPower = f.ghi * coefficient;
+      return {
+        date: f.period_end,
+        power: predictedPower,
+      };
+    });
+
     await this.powerPlantRepository.savePredictedProduction(
       userId,
       powerPlantId,
-      predictedPower,
+      predictedValues,
     );
-    return predictedPower;
+    return predictedValues;
   }
 }

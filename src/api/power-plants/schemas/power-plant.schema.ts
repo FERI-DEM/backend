@@ -14,12 +14,6 @@ export class PowerPlant {
   @Prop({ type: Number })
   longitude: number;
 
-  @Prop({ type: Number, default: 0 })
-  coefficient: number;
-
-  @Prop({ type: Number, default: 0 })
-  predictedProduction: number;
-
   @Prop({
     type: raw({
       date: { type: String },
