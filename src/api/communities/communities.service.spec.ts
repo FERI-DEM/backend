@@ -325,4 +325,43 @@ describe('CommunitiesService test', () => {
       expect(e.message).toBe('Community not found');
     }
   });
+  it('should find community by id', async () => {
+    const communityId = (
+      await communitiesService.create({
+        name: 'test',
+        adminId,
+      })
+    ).id;
+
+    const foundCommunity = await communitiesService.findById(communityId);
+    expect(foundCommunity.id).toEqual(communityId);
+  });
+  it("should fail to find community by id because it doesn't exist", async () => {
+    try {
+      await communitiesService.findById(faker.database.mongodbObjectId());
+    } catch (e) {
+      expect(e.message).toBe('Community not found');
+    }
+  });
+  it('should find community by userId', async () => {
+    await communitiesRepository.create({
+      name: 'test',
+      adminId,
+      membersIds: [adminId, memberId],
+    });
+
+    await communitiesRepository.create({
+      name: 'test',
+      adminId,
+      membersIds: [adminId, memberId],
+    });
+
+    const foundCommunity = await communitiesService.findByUser(memberId);
+    expect(foundCommunity.length).toEqual(2);
+  });
+  it('should find return empty array if user is not in anz community', async () => {
+    const foundCommunity = await communitiesService.findByUser(memberId);
+    expect(foundCommunity.length).toEqual(0);
+    expect(foundCommunity).toEqual([]);
+  });
 });

@@ -19,8 +19,13 @@ export class CommunitiesController {
   constructor(private readonly communitiesService: CommunitiesService) {}
 
   @Get()
-  async findOrganizationByUser(@User('id') userId: string) {
-    return await this.communitiesService.findCommunityByUser(userId);
+  async findCommunityByUser(@User('id') userId: string) {
+    return await this.communitiesService.findByUser(userId);
+  }
+
+  @Get(':id')
+  async findById(@Param('id') id: string) {
+    return await this.communitiesService.findById(id);
   }
 
   @Post()

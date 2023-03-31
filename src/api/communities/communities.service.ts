@@ -43,15 +43,18 @@ export class CommunitiesService {
     return true;
   }
 
-  async findCommunityByUser(userId: string): Promise<CommunityDocument> {
-    //TODO: how many communities can user have?
-    const org = await this.communityRepository.find({
+  async findByUser(userId: string): Promise<CommunityDocument[]> {
+    return await this.communityRepository.findAll({
       membersIds: { $in: [userId] },
     });
-    if (!org) {
+  }
+
+  async findById(id: string): Promise<CommunityDocument> {
+    const community = await this.communityRepository.findById(id);
+    if (!community) {
       throw new NotFoundException('Community not found');
     }
-    return org;
+    return community;
   }
 
   async create(
