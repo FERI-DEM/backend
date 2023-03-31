@@ -21,7 +21,7 @@ export class PowerPlantsController {
 
   @Get(':id')
   async find(@Param('id') powerPlantId: string) {
-    return await this.powerPlantService.findOne(this.userId, powerPlantId);
+    return await this.powerPlantService.findById(this.userId, powerPlantId);
   }
 
   @Patch(':id')

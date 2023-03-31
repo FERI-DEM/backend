@@ -35,7 +35,7 @@ describe('UsersService test', () => {
     }
   });
 
-  it('should be defined', async () => {
+  it('should be defined', () => {
     expect(app).toBeDefined();
     expect(moduleRef).toBeDefined();
     expect(userRepository).toBeDefined();

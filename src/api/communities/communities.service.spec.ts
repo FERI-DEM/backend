@@ -58,7 +58,7 @@ describe('CommunitiesService test', () => {
     await userRepository.deleteAll();
   });
 
-  it('should be defined', async () => {
+  it('should be defined', () => {
     expect(app).toBeDefined();
     expect(moduleRef).toBeDefined();
     expect(communitiesService).toBeDefined();

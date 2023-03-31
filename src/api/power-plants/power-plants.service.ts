@@ -13,27 +13,57 @@ import {
 import { ForecastsService } from '../forecasts/forecasts.service';
 import { roundUpDate } from '../../common/utils';
 import { PowerPlant } from './schemas/power-plant.schema';
+import { UsersService } from '../users/users.service';
+import { Role } from '../../common/types';
 
 @Injectable()
 export class PowerPlantsService {
   constructor(
     private readonly powerPlantRepository: PowerPlantRepository,
     private readonly forecastService: ForecastsService,
+    private readonly userService: UsersService,
   ) {}
 
   async create(userId: string, data: CreatePowerPlantDto) {
     // TODO: add role to user
-    return await this.powerPlantRepository.createPowerPlant(userId, data);
+    const result = await this.powerPlantRepository.createPowerPlant(
+      userId,
+      data,
+    );
+
+    if (!result) {
+      throw new HttpException(
+        'Could not create power plant',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    if (result.powerPlants.length === 1) {
+      await this.userService.changeRole(userId, Role.POWER_PLANT_OWNER);
+    }
+
+    return result;
   }
 
   async delete(userId: string, powerPlantId: string) {
-    return await this.powerPlantRepository.deletePowerPlant(
+    const result = await this.powerPlantRepository.deletePowerPlant(
       userId,
       powerPlantId,
     );
+    if (!result) {
+      throw new HttpException(
+        'Could not delete power plant',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (result.powerPlants.length === 0) {
+      await this.userService.changeRole(userId, Role.BASIC_USER);
+    }
+
+    return result;
   }
 
-  async findOne(userId: string, powerPlantId: string) {
+  async findById(userId: string, powerPlantId: string) {
     const powerPlant = await this.powerPlantRepository.findPowerPlantById(
       userId,
       powerPlantId,
@@ -66,7 +96,7 @@ export class PowerPlantsService {
     powerPlantId: string,
     data: CreateCalibrationDto,
   ) {
-    const found = await this.findOne(userId, powerPlantId);
+    const found = await this.findById(userId, powerPlantId);
     const latitude = found.powerPlants[0].latitude;
     const longitude = found.powerPlants[0].longitude;
 
@@ -104,7 +134,7 @@ export class PowerPlantsService {
     userId: string,
     powerPlantId: string,
   ): Promise<{ date: string; power: number }[]> {
-    const { powerPlants } = await this.findOne(userId, powerPlantId);
+    const { powerPlants } = await this.findById(userId, powerPlantId);
     const { calibration, latitude, longitude }: PowerPlant = powerPlants[0];
 
     if (calibration.length < 1) {

@@ -13,6 +13,7 @@ export class PowerPlantRepository {
     return await this.model.findOneAndUpdate(
       { _id: userId },
       { $push: { powerPlants: data } },
+      { new: true },
     );
   }
 
@@ -43,6 +44,7 @@ export class PowerPlantRepository {
     return await this.model.findOneAndUpdate(
       { _id: userId },
       { $pull: { powerPlants: { _id: powerPlantId } } },
+      { projection: { powerPlants: 1 } },
     );
   }
 
