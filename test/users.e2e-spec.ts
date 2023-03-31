@@ -26,7 +26,9 @@ describe('UsersController (e2e)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   it('/GET user by id should respond with 404', async () => {

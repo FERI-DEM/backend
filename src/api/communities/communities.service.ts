@@ -60,7 +60,6 @@ export class CommunitiesService {
   async create(
     data: CreateCommunityDto & { adminId: string },
   ): Promise<CommunityDocument> {
-    // TODO: how many communities can user create?
     const org = await this.communityRepository.create({
       ...data,
       membersIds: [data.adminId],
