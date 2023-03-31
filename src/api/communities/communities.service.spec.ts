@@ -14,6 +14,7 @@ describe('CommunitiesService test', () => {
     communitiesService: CommunitiesService,
     communitiesRepository: CommunityRepository,
     userRepository: UserRepository,
+    userService: UsersService,
     app: TestingModule,
     adminId: string,
     userId: string,
@@ -36,20 +37,25 @@ describe('CommunitiesService test', () => {
     communitiesService = app.get(CommunitiesService);
     communitiesRepository = app.get(CommunityRepository);
     userRepository = app.get(UserRepository);
+    userService = app.get(UsersService);
+  });
 
-    const userService = app.get(UsersService);
+  beforeEach(async () => {
     adminId = (await userService.create(createUserDto)).id;
     userId = (await userService.create(createUserDto)).id;
     memberId = (await userService.create(createUserDto)).id;
   });
 
   afterAll(async () => {
-    await communitiesRepository.dropCollection();
-    await userRepository.dropCollection();
     if (app) {
       app.flushLogs();
       await app.close();
     }
+  });
+
+  afterEach(async () => {
+    await communitiesRepository.deleteAll();
+    await userRepository.deleteAll();
   });
 
   it('should be defined', async () => {
@@ -58,6 +64,7 @@ describe('CommunitiesService test', () => {
     expect(communitiesService).toBeDefined();
     expect(communitiesRepository).toBeDefined();
     expect(userRepository).toBeDefined();
+    expect(userService).toBeDefined();
   });
 
   it('should pass validation', async () => {

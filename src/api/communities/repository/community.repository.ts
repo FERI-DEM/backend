@@ -16,6 +16,6 @@ export class CommunityRepository extends EntityRepository<CommunityDocument> {
   async findAll(
     filterQuery: FilterQuery<CommunityDocument>,
   ): Promise<CommunityDocument[]> {
-    return await this.communityModel.find().exec();
+    return await this.communityModel.find(filterQuery).exec();
   }
 }
