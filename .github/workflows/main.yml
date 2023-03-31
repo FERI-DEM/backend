@@ -7,6 +7,18 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  DB_URI: ${{ secrets.DB_URI }}
+  WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+  NODE_ENV: test
+  URL_PREFIX: /api
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  SENTRY_ENABLED: false
+  FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+  FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+  FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+  SOLCAST_API_KEY: ${{ secrets.SOLCAST_API_KEY }}
+
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
@@ -18,18 +30,10 @@ jobs:
 
       - run: npm ci
 
-      - name: Test
-        run: npm run test:full
-        env:
-          DB_URI: ${{ secrets.DB_URI }}
-          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
-          NODE_ENV: test
-          URL_PREFIX: /api
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          SENTRY_ENABLED: false
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
-          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
-          SOLCAST_API_KEY: ${{ secrets.SOLCAST_API_KEY }}
+      - name: unit tests
+        run: npm run test
+
+      - name: e2e tests
+        run: npm run test:e2e
 
       - run: npm run build
