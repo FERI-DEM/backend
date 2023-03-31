@@ -19,7 +19,7 @@ export class CommunitiesService {
 
   // TODO: a lot of checks could be replaced by role decorator
   // check if admin can add/delete member to/from community
-  private async validate(
+  async validate(
     memberId: string,
     communityId: string,
     adminId: string,
@@ -37,11 +37,8 @@ export class CommunitiesService {
       );
     }
 
-    // check if member exists
-    const member = await this.usersService.findById(memberId);
-    if (!member) {
-      return false;
-    }
+    // check if member exists (throws error if not exists)
+    await this.usersService.findById(memberId);
 
     return true;
   }
@@ -142,23 +139,26 @@ export class CommunitiesService {
   }
 
   async delete(communityId: string, adminId: string): Promise<boolean> {
-    const deleted = await this.communityRepository.findOneAndDelete({
+    const deleteCommunity = await this.communityRepository.findOneAndDelete({
       _id: communityId,
       adminId,
     });
-    if (!deleted) {
+    if (!deleteCommunity) {
       throw new NotFoundException('Community not found');
     }
-    await this.usersService.changeRole(adminId, Role.POWER_PLANT_OWNER);
-    return !!deleted;
+
+    await Promise.all(
+      deleteCommunity.membersIds.map((memberId) =>
+        this.usersService.changeRole(memberId, Role.POWER_PLANT_OWNER),
+      ),
+    );
+
+    return !!deleteCommunity;
   }
 
   async leave(memberId: string, communityId: string): Promise<boolean> {
-    const member = await this.usersService.findById(memberId);
-    // do we even need this check?
-    if (!member) {
-      return false;
-    }
+    // check if member exists (throws error if not exists)
+    await this.usersService.findById(memberId);
 
     const community = await this.communityRepository.findOne({
       _id: communityId,
