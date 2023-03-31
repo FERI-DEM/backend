@@ -19,7 +19,7 @@ jobs:
       - run: npm ci
 
       - name: Test
-        run: npm run test
+        run: npm run test:full
         env:
           DB_URI: ${{ secrets.DB_URI }}
           WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
