@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import settings from '../../app.settings';
 import { Role } from '../../common/types';
 import { UserRepository } from './repositories/user.repository';
+import { faker } from '@faker-js/faker';
 
 describe('UsersService test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -12,9 +13,9 @@ describe('UsersService test', () => {
     app: TestingModule,
     userRepository: UserRepository;
   const userData = {
-    email: 'test@test.com',
-    firstname: 'John',
-    lastname: 'Doe',
+    email: faker.internet.email(),
+    firstname: faker.name.firstName(),
+    lastname: faker.name.lastName(),
   };
 
   beforeAll(async () => {
@@ -73,7 +74,7 @@ describe('UsersService test', () => {
 
   it('should throw an error if user is not found by id', async () => {
     try {
-      await userService.findById('64064ccd62bdeec513ad2f0b');
+      await userService.findById(faker.database.mongodbObjectId());
     } catch (error) {
       expect(error.message).toEqual('User not found');
     }
@@ -87,7 +88,10 @@ describe('UsersService test', () => {
 
   it('should throw an error if user is not found by id', async () => {
     try {
-      await userService.changeRole('64064ccd62bdeec513ad2f0b', Role.ADMIN);
+      await userService.changeRole(
+        faker.database.mongodbObjectId(),
+        Role.ADMIN,
+      );
     } catch (error) {
       expect(error.message).toEqual('User not found');
     }

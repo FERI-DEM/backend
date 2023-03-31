@@ -4,6 +4,7 @@ import { UsersModule } from './users.module';
 import { UsersService } from './users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import settings from '../../app.settings';
+import { faker } from '@faker-js/faker';
 
 describe('UsersController test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -11,10 +12,10 @@ describe('UsersController test', () => {
     controller: UsersController;
 
   const userData = {
-    id: '64064ccd62bdeec513ad2f0b',
-    email: 'test@test.com',
-    firstname: 'John',
-    lastname: 'Doe',
+    id: faker.database.mongodbObjectId(),
+    email: faker.internet.email(),
+    firstname: faker.name.firstName(),
+    lastname: faker.name.lastName(),
   };
 
   const userServiceMock = {
