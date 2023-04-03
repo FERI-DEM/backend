@@ -25,7 +25,6 @@ export class PowerPlantsService {
   ) {}
 
   async create(userId: string, data: CreatePowerPlantDto) {
-    // TODO: add role to user
     const result = await this.powerPlantRepository.createPowerPlant(
       userId,
       data,
@@ -75,7 +74,7 @@ export class PowerPlantsService {
     return powerPlant;
   }
 
-  async findAll(userId: string) {
+  async findByUser(userId: string) {
     return await this.powerPlantRepository.findPowerPlantByUserId(userId);
   }
 

@@ -77,4 +77,68 @@ describe('power-plants service test', () => {
     expect(roleAfter).toBe(Role.POWER_PLANT_OWNER);
     expect(result.powerPlants.length).toBe(1);
   });
+
+  it('should delete power plant', async () => {
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+    const result2 = await powerPlantsService.delete(userId, powerPlantId);
+    const { role: roleAfter } = await userService.findById(userId);
+    expect(roleAfter).toBe(Role.BASIC_USER);
+    expect(result2.powerPlants.length).toBe(0);
+  });
+
+  it('should fail to delete power plant', async () => {
+    try {
+      await powerPlantsService.delete(userId, faker.database.mongodbObjectId());
+    } catch (e) {
+      expect(e.message).toBe('Could not delete power plant');
+    }
+  });
+
+  it('should find power plant by id', async () => {
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+    const result = await powerPlantsService.findById(userId, powerPlantId);
+    expect(result.powerPlants[0]._id.toString()).toBe(powerPlantId);
+  });
+
+  it('should fail to find power plant by id', async () => {
+    try {
+      await powerPlantsService.findById(
+        userId,
+        faker.database.mongodbObjectId(),
+      );
+    } catch (e) {
+      expect(e.message).toBe('Power plant not found');
+    }
+  });
+
+  it('should find power plants by user id', async () => {
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const result = await powerPlantsService.findByUser(user._id.toString());
+    expect(result.powerPlants.length).toBeGreaterThan(0);
+  });
+
+  it('should return null if user does not exist', async () => {
+    const result = await powerPlantsService.findByUser(
+      faker.database.mongodbObjectId(),
+    );
+    expect(result).toBe(null);
+  });
+
+  it('should return [] if user does not have any power plants', async () => {
+    const result = await powerPlantsService.findByUser(userId);
+    expect(result.powerPlants).toStrictEqual([]);
+  });
+
+  it('should update power plant', async () => {
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+    const result = await powerPlantsService.update(userId, powerPlantId, {
+      displayName: 'test1',
+    });
+    expect(result.powerPlants[0].displayName).toBe('test1');
+  });
 });
+
+// TODO: add test for calibration and prediction

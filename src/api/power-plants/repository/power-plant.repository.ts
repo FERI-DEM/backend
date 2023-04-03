@@ -10,7 +10,7 @@ export class PowerPlantRepository {
   constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
 
   async createPowerPlant(userId: string, data: CreatePowerPlantDto) {
-    return await this.model.findOneAndUpdate(
+    return this.model.findOneAndUpdate(
       { _id: userId },
       { $push: { powerPlants: data } },
       { new: true },
@@ -18,7 +18,7 @@ export class PowerPlantRepository {
   }
 
   async createCalibration(userId: string, powerPlantId, data: Calibration) {
-    return await this.model.findOneAndUpdate(
+    return this.model.findOneAndUpdate(
       { _id: userId, 'powerPlants._id': powerPlantId },
       { $push: { 'powerPlants.$.calibration': data } },
       { projection: { 'powerPlants.$': 1 } },
@@ -33,7 +33,7 @@ export class PowerPlantRepository {
       power: number;
     }[],
   ) {
-    return await this.model.findOneAndUpdate(
+    return this.model.findOneAndUpdate(
       { _id: userId, 'powerPlants._id': powerPlantId },
       { $set: { 'powerPlants.$.production': predictedValues } },
       { projection: { 'powerPlants.$': 1 } },
@@ -41,22 +41,22 @@ export class PowerPlantRepository {
   }
 
   async deletePowerPlant(userId: string, powerPlantId: string) {
-    return await this.model.findOneAndUpdate(
+    return this.model.findOneAndUpdate(
       { _id: userId },
       { $pull: { powerPlants: { _id: powerPlantId } } },
-      { projection: { powerPlants: 1 } },
+      { projection: { powerPlants: 1 }, new: true },
     );
   }
 
   async findPowerPlantById(userId: string, powerPlantId: string) {
-    return await this.model.findOne(
+    return this.model.findOne(
       { _id: userId, 'powerPlants._id': powerPlantId },
       { 'powerPlants.$': 1 },
     );
   }
 
   async findPowerPlantByUserId(userId: string) {
-    return await this.model.findOne({ _id: userId }, { powerPlants: 1 });
+    return this.model.findOne({ _id: userId }, { powerPlants: 1 });
   }
 
   async updatePowerPlant(
@@ -65,7 +65,7 @@ export class PowerPlantRepository {
     data: UpdatePowerPlantDto,
   ) {
     const { latitude, longitude, displayName } = data;
-    return await this.model.findOneAndUpdate(
+    return this.model.findOneAndUpdate(
       {
         _id: userId,
         'powerPlants._id': powerPlantId,

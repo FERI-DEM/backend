@@ -51,6 +51,6 @@ export class PowerPlantsController {
 
   @Get()
   async findAll() {
-    return await this.powerPlantService.findAll(this.userId);
+    return await this.powerPlantService.findByUser(this.userId);
   }
 }
