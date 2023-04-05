@@ -3,12 +3,14 @@ import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing';
 import { PowerPlantsService } from './power-plants.service';
 import { UsersService } from '../users/users.service';
 import { UserRepository } from '../users/repositories/user.repository';
-import { CreateCalibrationDto, CreatePowerPlantDto } from './dto';
+import { CreatePowerPlantDto } from './dto';
 import { faker } from '@faker-js/faker';
 import { PowerPlantsModule } from './power-plants.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import settings from '../../app.settings';
 import { AuthModule } from '../auth/auth.module';
+import { ForecastsService } from '../forecasts/forecasts.service';
+import { roundUpDate } from '../../common/utils';
 
 describe('power-plants service test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -18,14 +20,20 @@ describe('power-plants service test', () => {
     userRepository: UserRepository,
     userId: string;
 
-  const calibrationData: CreateCalibrationDto = {
-    power: 100,
-  };
+  const forecastServiceMock = {
+    getSolarRadiation: jest.fn().mockResolvedValue({
+      latitude: 30,
+      longitude: 30,
+      forecasts: [
+        { ghi: 1, period_end: roundUpDate(new Date().toISOString()) },
+      ],
+    }),
+  } as jest.Mocked<Pick<ForecastsService, 'getSolarRadiation'>>;
 
   const powerPlantData: CreatePowerPlantDto = {
     displayName: faker.name.firstName(),
-    latitude: Number(faker.address.latitude()),
-    longitude: Number(faker.address.longitude()),
+    latitude: 30,
+    longitude: 30,
   };
 
   beforeAll(async () => {
@@ -35,7 +43,10 @@ describe('power-plants service test', () => {
         PowerPlantsModule,
         MongooseModule.forRoot(settings.database.uri),
       ],
-    });
+    })
+      .overrideProvider(ForecastsService)
+      .useValue(forecastServiceMock);
+
     app = await moduleRef.compile();
     userService = app.get(UsersService);
     userRepository = app.get(UserRepository);
@@ -140,6 +151,89 @@ describe('power-plants service test', () => {
     });
     expect(result.powerPlants[0].displayName).toBe('test1');
   });
-});
 
-// TODO: add test for calibration and prediction
+  it('should create calibration', async () => {
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+
+    const result = await powerPlantsService.calibrate(userId, powerPlantId, {
+      power: 100,
+    });
+    expect(result.powerPlants[0].calibration.length).toBe(1);
+    expect(result.powerPlants[0].calibration[0].power).toBe(100);
+  });
+
+  it('should fail to create calibration because radiation is 0 or lower', async () => {
+    moduleRef.overrideProvider(ForecastsService).useValue({
+      getSolarRadiation: jest.fn().mockResolvedValue({
+        latitude: 30,
+        longitude: 30,
+        forecasts: [
+          { ghi: 0, period_end: roundUpDate(new Date().toISOString()) },
+        ],
+      }),
+    });
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+
+    try {
+      await powerPlantsService.calibrate(userId, powerPlantId, {
+        power: 100,
+      });
+    } catch (e) {
+      expect(e.message).toBe('Please calibrate when there is sun');
+    }
+  });
+
+  it('should fail to create calibration because power  is 0 or lower', async () => {
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+
+    try {
+      await powerPlantsService.calibrate(userId, powerPlantId, {
+        power: -100,
+      });
+    } catch (e) {
+      expect(e.message).toBe('Power must be greater than 0');
+    }
+  });
+
+  it('should fail to predict power because user has no calibration data', async () => {
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+    try {
+      await powerPlantsService.predict(userId, powerPlantId);
+    } catch (e) {
+      expect(e.message).toBe('No calibration data');
+    }
+  });
+
+  it('should fail to predict if forecast data could not be retrieved', async () => {
+    moduleRef.overrideProvider(ForecastsService).useValue({
+      getSolarRadiation: jest.fn().mockResolvedValue(null),
+    });
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+
+    await powerPlantsService.calibrate(userId, powerPlantId, {
+      power: 100,
+    });
+
+    try {
+      await powerPlantsService.predict(userId, powerPlantId);
+    } catch (e) {
+      expect(e.message).toBe('Could not retrieve data for forecasts');
+    }
+  });
+  it('should predict power', async () => {
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+
+    await powerPlantsService.calibrate(userId, powerPlantId, {
+      power: 100,
+    });
+
+    const result = await powerPlantsService.predict(userId, powerPlantId);
+    expect(result[0].power).toBe(100);
+  });
+});

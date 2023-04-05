@@ -16,6 +16,8 @@ import { PowerPlant } from './schemas/power-plant.schema';
 import { UsersService } from '../users/users.service';
 import { Role } from '../../common/types';
 
+// TODO: maybe user can change calibration if he enters wrong number
+
 @Injectable()
 export class PowerPlantsService {
   constructor(
@@ -95,6 +97,13 @@ export class PowerPlantsService {
     powerPlantId: string,
     data: CreateCalibrationDto,
   ) {
+    if (data.power <= 0) {
+      throw new HttpException(
+        'Power must be greater than 0',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const found = await this.findById(userId, powerPlantId);
     const latitude = found.powerPlants[0].latitude;
     const longitude = found.powerPlants[0].longitude;

@@ -21,7 +21,7 @@ export class PowerPlantRepository {
     return this.model.findOneAndUpdate(
       { _id: userId, 'powerPlants._id': powerPlantId },
       { $push: { 'powerPlants.$.calibration': data } },
-      { projection: { 'powerPlants.$': 1 } },
+      { new: true },
     );
   }
 

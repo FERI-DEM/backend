@@ -5,7 +5,6 @@ import { faker } from '@faker-js/faker';
 import { PowerPlantsModule } from './power-plants.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import settings from '../../app.settings';
-import { CommonModule } from '../../common/common.module';
 import { AuthModule } from '../auth/auth.module';
 
 describe('power-plants controller test', () => {
