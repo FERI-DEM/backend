@@ -2,13 +2,14 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ForecastsModule } from './api/forecasts/forecasts.module';
+import { ForecastsModule } from './modules/forecasts/forecasts.module';
 import configuration from './common/config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from './api/users/users.module';
-import { CommunitiesModule } from './api/communities/communities.module';
+import { UsersModule } from './modules/users/users.module';
+import { CommunitiesModule } from './modules/communities/communities.module';
 import { CommonModule } from './common/common.module';
-import { PowerPlantsModule } from './api/power-plants/power-plants.module';
+import { PowerPlantsModule } from './modules/power-plants/power-plants.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -24,11 +25,12 @@ import { PowerPlantsModule } from './api/power-plants/power-plants.module';
       }),
       inject: [ConfigService],
     }),
+    CommonModule,
     UsersModule,
+    AuthModule,
     PowerPlantsModule,
     CommunitiesModule,
     ForecastsModule,
-    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

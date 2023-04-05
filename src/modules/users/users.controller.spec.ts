@@ -5,6 +5,8 @@ import { UsersService } from './users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import settings from '../../app.settings';
 import { faker } from '@faker-js/faker';
+import { CommonModule } from '../../common/common.module';
+import { AuthModule } from '../auth/auth.module';
 
 describe('UsersController test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -25,7 +27,11 @@ describe('UsersController test', () => {
 
   beforeAll(async () => {
     moduleRef = Test.createTestingModule({
-      imports: [UsersModule, MongooseModule.forRoot(settings.database.uri)],
+      imports: [
+        AuthModule,
+        UsersModule,
+        MongooseModule.forRoot(settings.database.uri),
+      ],
     })
       .overrideProvider(UsersService)
       .useValue(userServiceMock);

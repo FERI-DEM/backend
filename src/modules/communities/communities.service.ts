@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -17,36 +18,40 @@ export class CommunitiesService {
     private readonly usersService: UsersService,
   ) {}
 
-  // TODO: a lot of checks could be replaced by role decorator
-  // check if admin can add/delete member to/from community
-  async validate(
+  async isMemberOfAdminsCommunity(
     memberId: string,
     communityId: string,
     adminId: string,
   ): Promise<boolean> {
-    // check if function caller is admin of this community
+    const community = await this.communityRepository.findOne({
+      _id: communityId,
+      adminId,
+      membersIds: { $in: [memberId] },
+    });
+
+    return !!community;
+  }
+
+  async isCommunityAdmin(
+    communityId: string,
+    adminId: string,
+  ): Promise<boolean> {
     const community = await this.communityRepository.findOne({
       _id: communityId,
       adminId,
     });
 
-    if (!community) {
-      throw new HttpException(
-        'You are not admin of this community',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    // check if member exists (throws error if not exists)
-    await this.usersService.findById(memberId);
-
-    return true;
+    return !!community;
   }
 
   async findByUser(userId: string): Promise<CommunityDocument[]> {
-    return await this.communityRepository.findAll({
-      membersIds: { $in: [userId] },
-    });
+    try {
+      return await this.communityRepository.findAll({
+        membersIds: { $in: [userId] },
+      });
+    } catch (e) {
+      throw new BadRequestException(e);
+    }
   }
 
   async findById(id: string): Promise<CommunityDocument> {
@@ -69,7 +74,7 @@ export class CommunitiesService {
         'Cloud not create community',
         HttpStatus.BAD_REQUEST,
       );
-    await this.usersService.changeRole(data.adminId, Role.COMMUNITY_ADMIN);
+    await this.usersService.addRole(data.adminId, Role.COMMUNITY_ADMIN);
     return org;
   }
 
@@ -78,21 +83,31 @@ export class CommunitiesService {
     communityId: string,
     adminId: string,
   ): Promise<boolean> {
-    const isValid = await this.validate(memberId, communityId, adminId);
+    const isAdmin = await this.isCommunityAdmin(communityId, adminId);
 
-    if (!isValid) {
+    if (!isAdmin) {
       throw new HttpException(
         'You can not add member to this community',
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.PRECONDITION_FAILED,
       );
     }
+
+    try {
+      await this.usersService.findById(memberId);
+    } catch (e) {
+      throw new HttpException(
+        'This member does not exist',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
     // check if member already in this community
-    const found = await this.communityRepository.findOne({
+    const community = await this.communityRepository.findOne({
       _id: communityId,
       membersIds: { $in: [memberId] },
     });
 
-    if (found) {
+    if (community) {
       throw new HttpException(
         'Member already in community',
         HttpStatus.BAD_REQUEST,
@@ -104,7 +119,7 @@ export class CommunitiesService {
       { $push: { membersIds: memberId } },
     );
 
-    await this.usersService.changeRole(memberId, Role.COMMUNITY_MEMBER);
+    await this.usersService.addRole(memberId, Role.COMMUNITY_MEMBER);
 
     return true;
   }
@@ -121,9 +136,13 @@ export class CommunitiesService {
       );
     }
 
-    const isValid = await this.validate(memberId, communityId, adminId);
+    const isMember = await this.isMemberOfAdminsCommunity(
+      memberId,
+      communityId,
+      adminId,
+    );
 
-    if (!isValid) {
+    if (!isMember) {
       throw new HttpException(
         'You can not remove member from this community',
         HttpStatus.BAD_REQUEST,
@@ -135,7 +154,11 @@ export class CommunitiesService {
       { $pull: { membersIds: memberId } },
     );
 
-    await this.usersService.changeRole(memberId, Role.POWER_PLANT_OWNER);
+    const memberCommunities = await this.findByUser(memberId);
+
+    if (memberCommunities.length === 0) {
+      await this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
+    }
 
     return true;
   }
@@ -145,22 +168,31 @@ export class CommunitiesService {
       _id: communityId,
       adminId,
     });
+
     if (!deleteCommunity) {
       throw new NotFoundException('Community not found');
     }
 
+    // could be slow
     await Promise.all(
-      deleteCommunity.membersIds.map((memberId) =>
-        this.usersService.changeRole(memberId, Role.POWER_PLANT_OWNER),
-      ),
+      deleteCommunity.membersIds.map(async (memberId) => {
+        const memberCommunities = await this.findByUser(memberId);
+        if (memberCommunities.length === 0) {
+          return this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
+        }
+        return null;
+      }),
     );
 
     return !!deleteCommunity;
   }
 
   async leave(memberId: string, communityId: string): Promise<boolean> {
-    // check if member exists (throws error if not exists)
-    await this.usersService.findById(memberId);
+    try {
+      await this.usersService.findById(memberId);
+    } catch (e) {
+      throw new NotFoundException('Member not found');
+    }
 
     const community = await this.communityRepository.findOne({
       _id: communityId,
@@ -186,7 +218,11 @@ export class CommunitiesService {
       { $pull: { membersIds: memberId } },
     );
 
-    await this.usersService.changeRole(memberId, Role.POWER_PLANT_OWNER);
+    const memberCommunities = await this.findByUser(memberId);
+
+    if (memberCommunities.length === 0) {
+      await this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
+    }
 
     return true;
   }

@@ -2,7 +2,7 @@ import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { UsersService } from '../src/api/users/users.service';
+import { UsersService } from '../src/modules/users/users.service';
 import { faker } from '@faker-js/faker';
 
 describe('UsersController (e2e)', () => {

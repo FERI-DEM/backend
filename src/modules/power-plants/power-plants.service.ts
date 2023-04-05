@@ -37,7 +37,7 @@ export class PowerPlantsService {
       );
     }
     if (result.powerPlants.length === 1) {
-      await this.userService.changeRole(userId, Role.POWER_PLANT_OWNER);
+      await this.userService.addRole(userId, Role.POWER_PLANT_OWNER);
     }
 
     return result;
@@ -56,7 +56,7 @@ export class PowerPlantsService {
     }
 
     if (result.powerPlants.length === 0) {
-      await this.userService.changeRole(userId, Role.BASIC_USER);
+      await this.userService.removeRole(userId, Role.BASIC_USER);
     }
 
     return result;
@@ -191,11 +191,6 @@ export class PowerPlantsService {
       };
     });
 
-    await this.powerPlantRepository.savePredictedProduction(
-      userId,
-      powerPlantId,
-      predictedValues,
-    );
     return predictedValues;
   }
 }

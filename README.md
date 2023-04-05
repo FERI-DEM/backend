@@ -39,7 +39,7 @@ $ npm run test:cov
 ```bash
 NODE_ENV=development
 PORT=3000
-URL_PREFIX=/api
+URL_PREFIX=/modules
 DB_URI=mongodb://root:root@localhost:27017
 WEATHER_API_KEY=weather_api_key
 SENTRY_DSN=dns

@@ -25,21 +25,6 @@ export class PowerPlantRepository {
     );
   }
 
-  async savePredictedProduction(
-    userId: string,
-    powerPlantId: string,
-    predictedValues: {
-      date: string;
-      power: number;
-    }[],
-  ) {
-    return this.model.findOneAndUpdate(
-      { _id: userId, 'powerPlants._id': powerPlantId },
-      { $set: { 'powerPlants.$.production': predictedValues } },
-      { projection: { 'powerPlants.$': 1 } },
-    );
-  }
-
   async deletePowerPlant(userId: string, powerPlantId: string) {
     return this.model.findOneAndUpdate(
       { _id: userId },

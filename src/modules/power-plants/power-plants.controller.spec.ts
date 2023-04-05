@@ -5,6 +5,8 @@ import { faker } from '@faker-js/faker';
 import { PowerPlantsModule } from './power-plants.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import settings from '../../app.settings';
+import { CommonModule } from '../../common/common.module';
+import { AuthModule } from '../auth/auth.module';
 
 describe('power-plants controller test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -15,6 +17,8 @@ describe('power-plants controller test', () => {
     id: faker.database.mongodbObjectId(),
     powerPlants: [],
   };
+
+  const userId = faker.database.mongodbObjectId().toString();
 
   const createPowerPlantDto = {
     displayName: faker.name.firstName(),
@@ -39,6 +43,7 @@ describe('power-plants controller test', () => {
   beforeAll(async () => {
     moduleRef = Test.createTestingModule({
       imports: [
+        AuthModule,
         PowerPlantsModule,
         MongooseModule.forRoot(settings.database.uri),
       ],
@@ -64,13 +69,13 @@ describe('power-plants controller test', () => {
   });
 
   it('should create a power plant', async () => {
-    const result = await controller.create(createPowerPlantDto);
+    const result = await controller.create(createPowerPlantDto, userId);
     expect(result).toEqual(powerPlantData);
     expect(powerPlantServiceMock.create).toBeCalled();
   });
 
   it('should find a power plant by user', async () => {
-    const result = await controller.findAll();
+    const result = await controller.findAll(userId);
     expect(result).toEqual(powerPlantData);
     expect(powerPlantServiceMock.findByUser).toBeCalled();
   });
@@ -79,21 +84,26 @@ describe('power-plants controller test', () => {
     const result = await controller.update(
       powerPlantData.id,
       createPowerPlantDto,
+      userId,
     );
     expect(result).toEqual(powerPlantData);
     expect(powerPlantServiceMock.update).toBeCalled();
   });
 
   it('should calibrate a power plant', async () => {
-    const result = await controller.calibrate(powerPlantData.id, {
-      power: 100,
-    });
+    const result = await controller.calibrate(
+      powerPlantData.id,
+      {
+        power: 100,
+      },
+      userId,
+    );
     expect(result).toEqual(powerPlantData);
     expect(powerPlantServiceMock.calibrate).toBeCalled();
   });
 
   it('should predict a power plant', async () => {
-    const result = await controller.predict(powerPlantData.id);
+    const result = await controller.predict(powerPlantData.id, userId);
     expect(result.length).toBeGreaterThan(0);
     expect(powerPlantServiceMock.predict).toBeCalled();
   });

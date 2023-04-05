@@ -1,7 +1,7 @@
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import * as request from 'supertest';
-import { CommunitiesService } from '../src/api/communities/communities.service';
+import { CommunitiesService } from '../src/modules/communities/communities.service';
 import { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 import { bootstrapGlobalPipes } from '../src/app.bootstrap';

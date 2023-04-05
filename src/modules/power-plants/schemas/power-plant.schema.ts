@@ -14,15 +14,6 @@ export class PowerPlant {
   @Prop({ type: Number })
   longitude: number;
 
-  @Prop({
-    type: raw({
-      date: { type: String },
-      power: { type: Number },
-    }),
-    default: [],
-  })
-  production: { date: string; power: number }[];
-
   @Prop({ type: Array, default: [] })
   calibration: { date: string; power: number; radiation: number }[];
 }

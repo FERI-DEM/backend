@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import settings from '../../app.settings';
 import { faker } from '@faker-js/faker';
 import { CommunitiesService } from './communities.service';
+import { AuthModule } from '../auth/auth.module';
 
 describe('CommunitiesController test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -42,6 +43,7 @@ describe('CommunitiesController test', () => {
   beforeAll(async () => {
     moduleRef = Test.createTestingModule({
       imports: [
+        AuthModule,
         CommunitiesModule,
         MongooseModule.forRoot(settings.database.uri),
       ],

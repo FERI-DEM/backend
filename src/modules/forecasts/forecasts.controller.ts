@@ -1,9 +1,12 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ForecastsService } from './forecasts.service';
 import { PvPowerDto, SolarRadiationDto, WeatherForecastDto } from './dto';
+import { AuthGuard } from '../auth/guards';
 
 @ApiTags('forecasts')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 @Controller('forecasts')
 export class ForecastsController {
   constructor(private readonly forecastsService: ForecastsService) {}

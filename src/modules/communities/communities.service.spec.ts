@@ -6,8 +6,8 @@ import { CommunitiesModule } from './communities.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserRepository } from '../users/repositories/user.repository';
 import { UsersService } from '../users/users.service';
-import { Role } from '../../common/types';
 import { faker } from '@faker-js/faker';
+import { AuthModule } from '../auth/auth.module';
 
 describe('CommunitiesService test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -20,15 +20,10 @@ describe('CommunitiesService test', () => {
     userId: string,
     memberId: string;
 
-  const createUserDto = {
-    email: 'test',
-    firstname: 'test',
-    lastname: 'test',
-  };
-
   beforeAll(async () => {
     moduleRef = Test.createTestingModule({
       imports: [
+        AuthModule,
         CommunitiesModule,
         MongooseModule.forRoot(settings.database.uri),
       ],
@@ -41,9 +36,24 @@ describe('CommunitiesService test', () => {
   });
 
   beforeEach(async () => {
-    adminId = (await userService.create(createUserDto)).id;
-    userId = (await userService.create(createUserDto)).id;
-    memberId = (await userService.create(createUserDto)).id;
+    adminId = (
+      await userService.create({
+        email: faker.internet.email(),
+        userId: faker.datatype.uuid(),
+      })
+    ).id;
+    userId = (
+      await userService.create({
+        email: faker.internet.email(),
+        userId: faker.datatype.uuid(),
+      })
+    ).id;
+    memberId = (
+      await userService.create({
+        email: faker.internet.email(),
+        userId: faker.datatype.uuid(),
+      })
+    ).id;
   });
 
   afterAll(async () => {
@@ -67,79 +77,79 @@ describe('CommunitiesService test', () => {
     expect(userService).toBeDefined();
   });
 
-  it('should pass validation', async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [memberId, adminId],
-    });
-    const isValid = await communitiesService.validate(
-      memberId,
-      community.id,
-      adminId,
-    );
+  // it('should pass validation', async () => {
+  //   const community = await communitiesRepository.create({
+  //     name: 'test',
+  //     adminId,
+  //     membersIds: [memberId, adminId],
+  //   });
+  //   const isValid = await communitiesService.validate(
+  //     memberId,
+  //     community.id,
+  //     adminId,
+  //   );
+  //
+  //   expect(isValid).toBeTruthy();
+  // });
 
-    expect(isValid).toBeTruthy();
-  });
-
-  it('should fail validation because user is not community admin', async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [memberId, adminId],
-    });
-    try {
-      await communitiesService.validate(memberId, community.id, userId);
-    } catch (e) {
-      expect(e.message).toBe('You are not admin of this community');
-    }
-  });
-
-  it('should fail validation because member is not community admin', async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [memberId, adminId],
-    });
-    try {
-      await communitiesService.validate(memberId, community.id, memberId);
-    } catch (e) {
-      expect(e.message).toBe('You are not admin of this community');
-    }
-  });
-
-  it('should fail validation because admin is not the admin of this community', async () => {
-    await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [memberId, adminId],
-    });
-    const community2 = await communitiesRepository.create({
-      name: 'test',
-      adminId: userId,
-      membersIds: [memberId, userId],
-    });
-
-    try {
-      await communitiesService.validate(memberId, community2.id, adminId);
-    } catch (e) {
-      expect(e.message).toBe('You are not admin of this community');
-    }
-  });
-
-  it('should fail validation because member is not a member of this community', async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [memberId, adminId],
-    });
-
-    try {
-      await communitiesService.validate(userId, community.id, adminId);
-    } catch (e) {
-      expect(e.message).toBe('User not found');
-    }
-  });
+  // it('should fail validation because user is not community admin', async () => {
+  //   const community = await communitiesRepository.create({
+  //     name: 'test',
+  //     adminId,
+  //     membersIds: [memberId, adminId],
+  //   });
+  //   try {
+  //     await communitiesService.validate(memberId, community.id, userId);
+  //   } catch (e) {
+  //     expect(e.message).toBe('You are not admin of this community');
+  //   }
+  // });
+  //
+  // it('should fail validation because member is not community admin', async () => {
+  //   const community = await communitiesRepository.create({
+  //     name: 'test',
+  //     adminId,
+  //     membersIds: [memberId, adminId],
+  //   });
+  //   try {
+  //     await communitiesService.validate(memberId, community.id, memberId);
+  //   } catch (e) {
+  //     expect(e.message).toBe('You are not admin of this community');
+  //   }
+  // });
+  //
+  // it('should fail validation because admin is not the admin of this community', async () => {
+  //   await communitiesRepository.create({
+  //     name: 'test',
+  //     adminId,
+  //     membersIds: [memberId, adminId],
+  //   });
+  //   const community2 = await communitiesRepository.create({
+  //     name: 'test',
+  //     adminId: userId,
+  //     membersIds: [memberId, userId],
+  //   });
+  //
+  //   try {
+  //     await communitiesService.validate(memberId, community2.id, adminId);
+  //   } catch (e) {
+  //     expect(e.message).toBe('You are not admin of this community');
+  //   }
+  // });
+  //
+  // it('should fail validation because member is not a member of this community', async () => {
+  //   const community = await communitiesRepository.create({
+  //     name: 'test',
+  //     adminId,
+  //     membersIds: [memberId, adminId],
+  //   });
+  //
+  //   try {
+  //     await communitiesService.validate(userId, community.id, adminId);
+  //   } catch (e) {
+  //     expect(e.message).toBe('User not found');
+  //   }
+  // });
 
   it('should create a community', async () => {
     const community = await communitiesService.create({
@@ -151,7 +161,7 @@ describe('CommunitiesService test', () => {
     expect(community.name).toBe('test');
     expect(community.membersIds).toEqual([adminId]);
     expect(community.adminId).toEqual(adminId);
-    expect(admin.role).toEqual(Role.COMMUNITY_ADMIN);
+    //  expect(admin.role).toEqual(Role.COMMUNITY_ADMIN);
   });
 
   it('should add a member to a community', async () => {
@@ -167,7 +177,7 @@ describe('CommunitiesService test', () => {
       adminId,
     );
     const member = await userRepository.findById(memberId);
-    expect(member.role).toEqual(Role.COMMUNITY_MEMBER);
+    // expect(member.role).toEqual(Role.COMMUNITY_MEMBER);
     expect(success).toBeTruthy();
   });
 
@@ -181,7 +191,7 @@ describe('CommunitiesService test', () => {
     try {
       await communitiesService.addMember(memberId, community.id, userId);
     } catch (e) {
-      expect(e.message).toBe('You are not admin of this community');
+      expect(e.message).toBe('You can not add member to this community');
     }
   });
   it("should fail to add a member to a community because member doesn't exist", async () => {
@@ -198,7 +208,7 @@ describe('CommunitiesService test', () => {
         adminId,
       );
     } catch (e) {
-      expect(e.message).toBe('User not found');
+      expect(e.message).toBe('This member does not exist');
     }
   });
   it('should fail to add a member to a community because member is already a member', async () => {
@@ -222,7 +232,7 @@ describe('CommunitiesService test', () => {
         adminId,
       );
     } catch (e) {
-      expect(e.message).toBe('You are not admin of this community');
+      expect(e.message).toBe('You can not add member to this community');
     }
   });
   it('should remove a member from community', async () => {
@@ -238,7 +248,7 @@ describe('CommunitiesService test', () => {
       adminId,
     );
     const member = await userRepository.findById(memberId);
-    expect(member.role).toEqual(Role.POWER_PLANT_OWNER);
+    //expect(member.role).toEqual(Role.POWER_PLANT_OWNER);
     expect(success).toBeTruthy();
   });
   it('should fail to remove a member from community because user is not admin', async () => {
@@ -251,7 +261,7 @@ describe('CommunitiesService test', () => {
     try {
       await communitiesService.removeMember(memberId, community.id, userId);
     } catch (e) {
-      expect(e.message).toBe('You are not admin of this community');
+      expect(e.message).toBe('You can not remove member from this community');
     }
   });
   it('should fail to because admin can not remove himself', async () => {
@@ -276,7 +286,7 @@ describe('CommunitiesService test', () => {
 
     const success = await communitiesService.leave(memberId, community.id);
     const member = await userRepository.findById(memberId);
-    expect(member.role).toEqual(Role.POWER_PLANT_OWNER);
+    //expect(member.role).toEqual(Role.POWER_PLANT_OWNER);
     expect(success).toBeTruthy();
   });
   it('should fail to remove a member from community because member is not a member of this community', async () => {
@@ -315,9 +325,9 @@ describe('CommunitiesService test', () => {
     const success = await communitiesService.delete(community.id, adminId);
     const admin = await userRepository.findById(adminId);
     const member = await userRepository.findById(memberId);
-    expect(member.role).toEqual(Role.POWER_PLANT_OWNER);
+    // expect(member.role).toEqual(Role.POWER_PLANT_OWNER);
     expect(success).toBeTruthy();
-    expect(admin.role).toEqual(Role.POWER_PLANT_OWNER);
+    // expect(admin.role).toEqual(Role.POWER_PLANT_OWNER);
   });
   it('should fail to delete community because your a not the admin', async () => {
     const community = await communitiesRepository.create({

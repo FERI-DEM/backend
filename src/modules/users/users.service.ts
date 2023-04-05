@@ -24,6 +24,32 @@ export class UsersService {
     return await this.userRepository.create(data);
   }
 
+  async addRole(id: string, role: Role): Promise<UserDocument> {
+    return await this.userRepository.findOneAndUpdate(
+      {
+        _id: id,
+      },
+      {
+        $addToSet: {
+          roles: role,
+        },
+      },
+    );
+  }
+
+  async removeRole(id: string, role: Role): Promise<UserDocument> {
+    return await this.userRepository.findOneAndUpdate(
+      {
+        _id: id,
+      },
+      {
+        $pull: {
+          roles: role,
+        },
+      },
+    );
+  }
+
   async changeRole(id: string, role: Role): Promise<UserDocument> {
     const user = await this.userRepository.findOneAndUpdate(
       {

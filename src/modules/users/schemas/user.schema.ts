@@ -8,21 +8,21 @@ import {
 
 @Schema({ timestamps: true, collection: 'users' })
 export class User extends Document {
+  /**
+   * @userId: The user's Firebase UID
+   */
   @Prop({ type: String, required: true })
-  firstname: string;
+  userId: string;
 
-  @Prop({ type: String, required: true })
-  lastname: string;
-
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, unique: true })
   email: string;
 
   @Prop({
-    type: String,
-    default: Role.BASIC_USER,
+    type: [String],
+    default: [Role.BASIC_USER],
     enum: Object.values(Role),
   })
-  role: Role;
+  roles: Role[];
 
   @Prop({ type: [PowerPlantSchema], default: [] })
   powerPlants: PowerPlant[];

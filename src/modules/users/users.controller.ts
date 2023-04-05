@@ -1,7 +1,14 @@
-import { Controller, Get, HttpException, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { User } from '../../common/decorators';
+import { AuthGuard } from '../auth/guards';
 
 @ApiTags('users')
 @Controller('users')
@@ -9,9 +16,10 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @ApiBearerAuth()
+  @UseGuards(AuthGuard)
   @Get('me')
-  async findMe(@User('email') email: string) {
-    return await this.usersService.findByEmail(email);
+  async findMe(@User() user: any) {
+    return user;
   }
 
   @Get(':id')
