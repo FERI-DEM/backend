@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import type { AxiosError, AxiosResponse } from 'axios';
 import { PvPowerDto, SolarRadiationDto, WeatherForecastDto } from './dto';
@@ -44,16 +44,20 @@ export class ForecastsService {
     });
 
     if (!forecast) {
-      NestLogger.log('Fetching new solar radiation forecast');
-      const { data: response } = await this.httpService.axiosRef.get(
-        `https://api.solcast.com.au/world_radiation/forecasts?latitude=-${lat}&longitude=${lon}&hours=168&api_key=${settings.secrets.solcast}`,
-      );
-      await this.solarRadiationRep.create({
-        ...response,
-        latitude: lat,
-        longitude: lon,
-      });
-      return response;
+      try {
+        NestLogger.log('Fetching new solar radiation forecast');
+        const { data: response } = await this.httpService.axiosRef.get(
+          `https://api.solcast.com.au/world_radiation/forecasts?latitude=-${lat}&longitude=${lon}&hours=168&api_key=${settings.secrets.solcast}`,
+        );
+        await this.solarRadiationRep.create({
+          ...response,
+          latitude: lat,
+          longitude: lon,
+        });
+        return response;
+      } catch (e) {
+        throw new HttpException(e.message, 400);
+      }
     }
 
     return forecast;
