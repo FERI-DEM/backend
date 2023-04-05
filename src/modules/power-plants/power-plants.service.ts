@@ -56,7 +56,7 @@ export class PowerPlantsService {
     }
 
     if (result.powerPlants.length === 0) {
-      await this.userService.removeRole(userId, Role.BASIC_USER);
+      await this.userService.removeRole(userId, Role.POWER_PLANT_OWNER);
     }
 
     return result;
@@ -157,7 +157,6 @@ export class PowerPlantsService {
 
     // TODO: last calibration or average
     const { power, radiation } = calibration[calibration.length - 1];
-    // Prediction for next 30 min
 
     if (radiation <= 0) {
       throw new HttpException(
@@ -183,14 +182,12 @@ export class PowerPlantsService {
     }
 
     // predicted values for 7 days
-    const predictedValues = forecasts.map((f) => {
+    return forecasts.map((f) => {
       const predictedPower = f.ghi * coefficient;
       return {
         date: f.period_end,
         power: predictedPower,
       };
     });
-
-    return predictedValues;
   }
 }

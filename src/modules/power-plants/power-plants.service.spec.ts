@@ -46,7 +46,7 @@ describe('power-plants service test', () => {
     userId = (
       await userService.create({
         userId: faker.datatype.uuid(),
-        email: 'test',
+        email: faker.internet.email(),
       })
     ).id;
   });
@@ -70,23 +70,23 @@ describe('power-plants service test', () => {
     expect(userService).toBeDefined();
   });
 
-  // it('should create a power plant', async () => {
-  //   const { roles: rolesBefore } = await userService.findById(userId);
-  //   const result = await powerPlantsService.create(userId, powerPlantData);
-  //   const { roles: rolesAfter } = await userService.findById(userId);
-  //   expect(rolesBefore[0]).toBe(Role.BASIC_USER);
-  //   expect(rolesAfter[0]).toBe(Role.POWER_PLANT_OWNER);
-  //   expect(result.powerPlants.length).toBe(1);
-  // });
-  //
-  // it('should delete power plant', async () => {
-  //   const user = await powerPlantsService.create(userId, powerPlantData);
-  //   const powerPlantId = user.powerPlants[0]._id.toString();
-  //   const result2 = await powerPlantsService.delete(userId, powerPlantId);
-  //   const { roles: rolesAfter } = await userService.findById(userId);
-  //   expect(rolesAfter[0]).toBe(Role.BASIC_USER);
-  //   expect(result2.powerPlants.length).toBe(0);
-  // });
+  it('should create a power plant', async () => {
+    const { roles: rolesBefore } = await userService.findById(userId);
+    const result = await powerPlantsService.create(userId, powerPlantData);
+    const { roles: rolesAfter } = await userService.findById(userId);
+    expect(rolesBefore[0]).toBe(Role.BASIC_USER);
+    expect(rolesAfter[1]).toBe(Role.POWER_PLANT_OWNER);
+    expect(result.powerPlants.length).toBe(1);
+  });
+
+  it('should delete power plant', async () => {
+    const user = await powerPlantsService.create(userId, powerPlantData);
+    const powerPlantId = user.powerPlants[0]._id.toString();
+    const result2 = await powerPlantsService.delete(userId, powerPlantId);
+    const { roles: rolesAfter } = await userService.findById(userId);
+    expect(rolesAfter[0]).toBe(Role.BASIC_USER);
+    expect(result2.powerPlants.length).toBe(0);
+  });
 
   it('should fail to delete power plant', async () => {
     try {
