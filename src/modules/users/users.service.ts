@@ -49,21 +49,4 @@ export class UsersService {
       },
     );
   }
-
-  async changeRole(id: string, role: Role): Promise<UserDocument> {
-    const user = await this.userRepository.findOneAndUpdate(
-      {
-        _id: id,
-      },
-      {
-        $set: {
-          role: role,
-        },
-      },
-    );
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
-  }
 }
