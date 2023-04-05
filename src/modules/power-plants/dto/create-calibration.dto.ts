@@ -2,7 +2,9 @@ import { IsDateString, IsOptional, IsPositive } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCalibrationDto {
-  @ApiProperty()
+  @ApiProperty({
+    required: false,
+  })
   @IsDateString()
   @IsOptional()
   date?: string;
