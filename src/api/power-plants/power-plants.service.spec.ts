@@ -1,13 +1,13 @@
+import { Role } from '../../common/types';
 import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing';
+import { PowerPlantsService } from './power-plants.service';
 import { UsersService } from '../users/users.service';
 import { UserRepository } from '../users/repositories/user.repository';
-import { PowerPlantsService } from './power-plants.service';
-import { faker } from '@faker-js/faker';
 import { CreateCalibrationDto, CreatePowerPlantDto } from './dto';
-import settings from '../../app.settings';
-import { MongooseModule } from '@nestjs/mongoose';
+import { faker } from '@faker-js/faker';
 import { PowerPlantsModule } from './power-plants.module';
-import { Role } from '../../common/types';
+import { MongooseModule } from '@nestjs/mongoose';
+import settings from '../../app.settings';
 
 describe('power-plants service test', () => {
   let moduleRef: TestingModuleBuilder,

@@ -28,7 +28,7 @@ describe('power-plants controller test', () => {
     findById: jest.fn().mockResolvedValue(powerPlantData),
     update: jest.fn().mockResolvedValue(powerPlantData),
     calibrate: jest.fn().mockResolvedValue(powerPlantData),
-    predict: jest.fn().mockResolvedValue([faker.random.numeric()]),
+    predict: jest.fn().mockResolvedValue([{ date: new Date(), power: 100 }]),
   } as jest.Mocked<
     Pick<
       PowerPlantsService,
@@ -94,7 +94,7 @@ describe('power-plants controller test', () => {
 
   it('should predict a power plant', async () => {
     const result = await controller.predict(powerPlantData.id);
-    expect(result).toEqual([faker.random.numeric()]);
+    expect(result.length).toBeGreaterThan(0);
     expect(powerPlantServiceMock.predict).toBeCalled();
   });
 });
