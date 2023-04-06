@@ -6,7 +6,6 @@ import { Role } from '../../common/types';
 import { UserRepository } from './repositories/user.repository';
 import { faker } from '@faker-js/faker';
 import { UsersModule } from './users.module';
-import { CommonModule } from '../../common/common.module';
 import { AuthModule } from '../auth/auth.module';
 
 describe('UsersService test', () => {
@@ -57,7 +56,7 @@ describe('UsersService test', () => {
     expect(user).toHaveProperty('_id');
     expect(user).toHaveProperty('createdAt');
     expect(user).toHaveProperty('updatedAt');
-    // expect(user.role).toBe(Role.BASIC_USER);
+    expect(user.roles[0]).toBe(Role.BASIC_USER);
     expect(user.powerPlants).toEqual([]);
   });
 
@@ -89,20 +88,19 @@ describe('UsersService test', () => {
     }
   });
 
-  it("should change a user's role", async () => {
+  it('should add role to user', async () => {
     const user = await userService.create(userData);
-    // const updatedUser = await userService.changeRole(user._id, Role.ADMIN);
-    // expect(updatedUser.role).toBe(Role.ADMIN);
+    const updatedUser = await userService.addRole(user._id, Role.ADMIN);
+    expect(updatedUser.roles.includes(Role.ADMIN)).toBeTruthy();
   });
 
-  it('should throw an error if user is not found by id', async () => {
-    try {
-      // await userService.changeRole(
-      //   faker.database.mongodbObjectId(),
-      //   Role.ADMIN,
-      // );
-    } catch (error) {
-      expect(error.message).toEqual('User not found');
-    }
+  it('should remove role form user', async () => {
+    const user = await userService.create(userData);
+    const updatedUser = await userService.addRole(user._id, Role.ADMIN);
+    const removedRoleUser = await userService.removeRole(
+      updatedUser._id,
+      Role.ADMIN,
+    );
+    expect(removedRoleUser.roles.includes(Role.ADMIN)).toBeFalsy();
   });
 });

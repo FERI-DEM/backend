@@ -97,7 +97,7 @@ describe('ForecastsService test', () => {
     expect(httpServiceMock.axiosRef.get).toBeCalledTimes(1);
   });
 
-  it('should get solar radiation from api and save to db if a lot of time has passed from last api call', async () => {
+  it('should get solar radiation from api and save to db if the data is to old in db', async () => {
     await forecastsService.getSolarRadiation({
       lat: 30,
       lon: 30,
