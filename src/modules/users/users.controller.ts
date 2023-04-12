@@ -33,6 +33,9 @@ export class UsersController {
 
   @Get('email/:email')
   async findByEmail(@Param('email') email: string) {
-    return await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
   }
 }

@@ -113,11 +113,28 @@ export class PowerPlantsService {
       lon: longitude,
     });
 
+    if (!forecasts) {
+      throw new HttpException(
+        'Could not get solar radiation',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // TODO: maybe we should round up to the nearest hour
     const date = roundUpDate(new Date().toISOString());
 
-    const { ghi } = forecasts.find(
+    const forecast = forecasts.find(
       (f) => f.period_end.split('.')[0] === date.split('.')[0],
     );
+
+    if (!forecast) {
+      throw new HttpException(
+        'Current hour is not in the forecast',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const { ghi } = forecast;
 
     if (ghi <= 0) {
       throw new HttpException(
