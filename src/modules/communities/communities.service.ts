@@ -79,7 +79,7 @@ export class CommunitiesService {
   }
 
   async addMember(
-    memberId: string,
+    email: string,
     communityId: string,
     adminId: string,
   ): Promise<boolean> {
@@ -92,14 +92,12 @@ export class CommunitiesService {
       );
     }
 
-    try {
-      await this.usersService.findById(memberId);
-    } catch (e) {
-      throw new HttpException(
-        'This member does not exist',
-        HttpStatus.PRECONDITION_FAILED,
-      );
+    const member = await this.usersService.findByEmail(email);
+    if (!member) {
+      throw new HttpException('Member not found', HttpStatus.BAD_REQUEST);
     }
+
+    const memberId = member._id;
 
     // check if member already in this community
     const community = await this.communityRepository.findOne({

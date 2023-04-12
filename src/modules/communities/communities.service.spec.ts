@@ -19,7 +19,8 @@ describe('CommunitiesService test', () => {
     app: TestingModule,
     adminId: string,
     userId: string,
-    memberId: string;
+    memberId: string,
+    memberEmail: string;
 
   beforeAll(async () => {
     moduleRef = Test.createTestingModule({
@@ -51,13 +52,13 @@ describe('CommunitiesService test', () => {
         roles: [Role.COMMUNITY_MEMBER, Role.POWER_PLANT_OWNER],
       })
     ).id;
-    memberId = (
-      await userService.create({
-        email: faker.internet.email(),
-        userId: faker.datatype.uuid(),
-        roles: [Role.COMMUNITY_MEMBER, Role.POWER_PLANT_OWNER],
-      })
-    ).id;
+    const member = await userService.create({
+      email: faker.internet.email(),
+      userId: faker.datatype.uuid(),
+      roles: [Role.COMMUNITY_MEMBER, Role.POWER_PLANT_OWNER],
+    });
+    memberId = member.id;
+    memberEmail = member.email;
   });
 
   afterAll(async () => {
@@ -156,7 +157,7 @@ describe('CommunitiesService test', () => {
     });
 
     const success = await communitiesService.addMember(
-      memberId,
+      memberEmail,
       community.id,
       adminId,
     );
@@ -192,7 +193,7 @@ describe('CommunitiesService test', () => {
         adminId,
       );
     } catch (e) {
-      expect(e.message).toBe('This member does not exist');
+      expect(e.message).toBe('Member not found');
     }
   });
   it('should fail to add a member to a community because member is already a member', async () => {
@@ -203,7 +204,7 @@ describe('CommunitiesService test', () => {
     });
 
     try {
-      await communitiesService.addMember(memberId, community.id, adminId);
+      await communitiesService.addMember(memberEmail, community.id, adminId);
     } catch (e) {
       expect(e.message).toBe('Member already in community');
     }
