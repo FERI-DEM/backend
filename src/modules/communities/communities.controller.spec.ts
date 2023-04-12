@@ -123,14 +123,15 @@ describe('CommunitiesController test', () => {
     );
   });
   it('should add a member to a community', async () => {
+    const memberEmail = faker.internet.email();
     const res = await controller.addMember(
-      { memberId: communityData.membersIds[0] },
+      { email: memberEmail },
       communityData.id,
       communityData.adminId,
     );
     expect(res).toBeTruthy();
     expect(communityServiceMock.addMember).toBeCalledWith(
-      communityData.membersIds[0],
+      memberEmail,
       communityData.id,
       communityData.adminId,
     );
