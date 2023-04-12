@@ -22,13 +22,13 @@ import { Role } from '../../common/types';
 export class CommunitiesController {
   constructor(private readonly communitiesService: CommunitiesService) {}
 
-  @Roles(Role.COMMUNITY_MEMBER)
+  @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
   @Get()
   async findCommunityByUser(@User('id') userId: string) {
     return await this.communitiesService.findByUser(userId);
   }
 
-  @Roles(Role.COMMUNITY_MEMBER)
+  @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
   @Get(':id')
   async findById(@Param('id') id: string) {
     return await this.communitiesService.findById(id);
