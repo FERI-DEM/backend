@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document } from 'mongoose';
-import { User as Member } from '../../users/schemas/user.schema';
+import { Document } from 'mongoose';
+import { Member, MemberSchema } from './member.schema';
 
 @Schema({ timestamps: true, collection: 'communities' })
 export class Community {
@@ -10,7 +10,7 @@ export class Community {
   @Prop({ type: [String] })
   membersIds: string[];
 
-  @Prop({ type: [mongoose.Types.ObjectId], ref: 'User' })
+  @Prop({ type: [MemberSchema], default: [] })
   members: Member[];
 
   @Prop({ type: String, required: true })

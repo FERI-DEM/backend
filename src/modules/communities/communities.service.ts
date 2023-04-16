@@ -65,8 +65,17 @@ export class CommunitiesService {
   async create(
     data: CreateCommunityDto & { adminId: string },
   ): Promise<CommunityDocument> {
+    const members = data.powerPlants.map(
+      ({ powerPlantId, powerPlantName }) => ({
+        powerPlantId: powerPlantId,
+        userId: data.adminId,
+        powerPlantName: powerPlantName,
+      }),
+    );
+
     const org = await this.communityRepository.create({
       ...data,
+      members,
       membersIds: [data.adminId],
     });
     if (!org)
