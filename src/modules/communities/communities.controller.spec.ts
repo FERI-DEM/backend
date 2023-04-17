@@ -81,7 +81,10 @@ describe('CommunitiesController test', () => {
   });
   it('should create a community', async () => {
     const res = await controller.create(
-      { name: 'test' },
+      {
+        name: 'test',
+        powerPlants: [{ powerPlantName: 'test', powerPlantId: 'test' }],
+      },
       communityData.adminId,
     );
     expect(res).toBeTruthy();
