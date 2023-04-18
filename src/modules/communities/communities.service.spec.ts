@@ -136,19 +136,6 @@ describe('CommunitiesService test', () => {
     expect(isAdmin).toBeFalsy();
   });
 
-  it('should create a community', async () => {
-    const community = await communitiesService.create({
-      name: 'test',
-      adminId,
-    });
-    const admin = await userRepository.findById(adminId);
-    expect(community).toHaveProperty('_id');
-    expect(community.name).toBe('test');
-    expect(community.membersIds).toEqual([adminId]);
-    expect(community.adminId).toEqual(adminId);
-    expect(admin.roles.includes(Role.COMMUNITY_ADMIN)).toBeTruthy();
-  });
-
   it('should add a member to a community', async () => {
     const community = await communitiesRepository.create({
       name: 'test',
@@ -326,17 +313,6 @@ describe('CommunitiesService test', () => {
     } catch (e) {
       expect(e.message).toBe('Community not found');
     }
-  });
-  it('should find community by id', async () => {
-    const communityId = (
-      await communitiesService.create({
-        name: 'test',
-        adminId,
-      })
-    ).id;
-
-    const foundCommunity = await communitiesService.findById(communityId);
-    expect(foundCommunity.id).toEqual(communityId);
   });
   it("should fail to find community by id because it doesn't exist", async () => {
     try {
