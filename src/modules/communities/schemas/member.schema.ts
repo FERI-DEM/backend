@@ -1,15 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 
 @Schema({ _id: false })
 export class Member {
-  @Prop({ type: String, required: true })
+  @Prop({ type: mongoose.Types.ObjectId, required: true })
   powerPlantId: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: mongoose.Types.ObjectId, required: true })
   userId: string;
-
-  @Prop({ type: String, required: true })
-  powerPlantName: string;
 }
 
 export type MemberDocument = Member & Document;

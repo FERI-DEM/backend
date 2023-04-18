@@ -7,5 +7,5 @@ export class CreateCommunityDto {
   name: string;
   @ApiProperty()
   @IsArray()
-  powerPlants: { powerPlantId: string; powerPlantName: string }[];
+  powerPlants: { powerPlantId: string }[];
 }
