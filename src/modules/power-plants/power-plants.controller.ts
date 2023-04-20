@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -66,5 +67,11 @@ export class PowerPlantsController {
   @Get()
   async findAll(@User('id') userId: string) {
     return await this.powerPlantService.findByUser(userId);
+  }
+
+  @Roles(Role.POWER_PLANT_OWNER)
+  @Delete(':id')
+  async delete(@Param('id') powerPlantId: string, @User('id') userId: string) {
+    return await this.powerPlantService.delete(userId, powerPlantId);
   }
 }
