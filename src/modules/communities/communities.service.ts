@@ -10,6 +10,8 @@ import { UsersService } from '../users/users.service';
 import { Role } from '../../common/types';
 import { CommunityRepository } from './repository/community.repository';
 import { CommunityDocument } from './schemas/community.schema';
+import mongoose from 'mongoose';
+import { Community } from './types/community.types';
 
 @Injectable()
 export class CommunitiesService {
@@ -54,19 +56,27 @@ export class CommunitiesService {
     }
   }
 
-  async findById(id: string): Promise<CommunityDocument> {
-    const community = await this.communityRepository.findById(id);
-    if (!community) {
+  async findById(id: string): Promise<Community> {
+    const communityResult = await this.communityRepository.findByIdWithLookup(
+      id,
+    );
+    if (!communityResult && communityResult.length === 0) {
       throw new NotFoundException('Community not found');
     }
-    return community;
+    return communityResult[0];
   }
 
   async create(
     data: CreateCommunityDto & { adminId: string },
   ): Promise<CommunityDocument> {
+    const members = data.powerPlants.map(({ powerPlantId }) => ({
+      powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+      userId: new mongoose.Types.ObjectId(data.adminId),
+    }));
+
     const org = await this.communityRepository.create({
       ...data,
+      members,
       membersIds: [data.adminId],
     });
     if (!org)

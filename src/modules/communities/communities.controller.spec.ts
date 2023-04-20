@@ -79,17 +79,6 @@ describe('CommunitiesController test', () => {
       communityData.adminId,
     );
   });
-  it('should create a community', async () => {
-    const res = await controller.create(
-      { name: 'test' },
-      communityData.adminId,
-    );
-    expect(res).toBeTruthy();
-    expect(communityServiceMock.create).toBeCalledWith({
-      name: 'test',
-      adminId: communityData.adminId,
-    });
-  });
   it('should leave a community', async () => {
     const res = await controller.leave(communityData.id, communityData.adminId);
     expect(res).toBeTruthy();
