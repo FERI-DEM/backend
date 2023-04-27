@@ -5,10 +5,6 @@ export class CreateCalibrationDto {
   @ApiProperty({
     required: false,
   })
-  @IsDateString()
-  @IsOptional()
-  date?: string;
-
   @ApiProperty()
   @IsPositive()
   power: number;
