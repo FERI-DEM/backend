@@ -1,5 +1,7 @@
 import { Client } from 'cassandra-driver';
 
+// TODO: when writing to cassandra?
+
 export interface HistoricalData {
   powerPlantId: string;
   power: number;
