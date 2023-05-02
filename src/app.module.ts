@@ -10,6 +10,8 @@ import { CommunitiesModule } from './modules/communities/communities.module';
 import { CommonModule } from './common/common.module';
 import { PowerPlantsModule } from './modules/power-plants/power-plants.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CassandraModule } from './common/modules';
+import settings from './app.settings';
 
 @Module({
   imports: [
@@ -24,6 +26,10 @@ import { AuthModule } from './modules/auth/auth.module';
         uri: configService.get<string>('DB_URI'),
       }),
       inject: [ConfigService],
+    }),
+    CassandraModule.forRoot({
+      contactPoints: settings.database.cassandra.contactPoints,
+      localDataCenter: settings.database.cassandra.localDataCenter,
     }),
     CommonModule,
     UsersModule,

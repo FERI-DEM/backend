@@ -20,6 +20,17 @@ const settings = {
   },
   database: {
     uri: env.get('DB_URI').required(true).asString(),
+    cassandra: {
+      contactPoints: env
+        .get('CASSANDRA_CONTACT_POINTS')
+        .required(true)
+        .asArray(','),
+      localDataCenter: env
+        .get('CASSANDRA_LOCAL_DATA_CENTER')
+        .required(true)
+        .asString(),
+      keyspace: env.get('CASSANDRA_KEYSPACE').required(true).asString(),
+    },
   },
   services: {
     sentry: {
