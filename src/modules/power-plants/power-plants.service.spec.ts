@@ -43,20 +43,6 @@ describe('power-plants service test', () => {
         AuthModule,
         PowerPlantsModule,
         MongooseModule.forRoot(settings.database.uri),
-        CassandraModule.forRoot({
-          cloud: {
-            secureConnectBundle:
-              settings.database.cassandra.pathToSecureConnectBundle,
-          },
-          credentials: {
-            username: settings.database.cassandra.credentials.username,
-            password: settings.database.cassandra.credentials.password,
-          },
-          keyspace: settings.database.cassandra.keyspace,
-          socketOptions: {
-            readTimeout: 0,
-          },
-        }),
       ],
     })
       .overrideProvider(ForecastsService)
