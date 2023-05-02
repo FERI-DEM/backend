@@ -28,8 +28,18 @@ import settings from './app.settings';
       inject: [ConfigService],
     }),
     CassandraModule.forRoot({
-      contactPoints: settings.database.cassandra.contactPoints,
-      localDataCenter: settings.database.cassandra.localDataCenter,
+      cloud: {
+        secureConnectBundle:
+          settings.database.cassandra.pathToSecureConnectBundle,
+      },
+      credentials: {
+        username: settings.database.cassandra.credentials.username,
+        password: settings.database.cassandra.credentials.password,
+      },
+      keyspace: settings.database.cassandra.keyspace,
+      socketOptions: {
+        readTimeout: 0,
+      },
     }),
     CommonModule,
     UsersModule,

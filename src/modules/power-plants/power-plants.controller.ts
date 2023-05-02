@@ -34,7 +34,10 @@ export class PowerPlantsController {
   @Roles(Role.POWER_PLANT_OWNER)
   @Get(':id')
   async find(@Param('id') powerPlantId: string, @User('id') userId: string) {
-    return await this.powerPlantService.findById(userId, powerPlantId);
+    return await this.powerPlantService.findPowerPlantWithHistoricData(
+      userId,
+      powerPlantId,
+    );
   }
 
   @Roles(Role.POWER_PLANT_OWNER)
