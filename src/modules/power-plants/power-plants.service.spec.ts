@@ -11,6 +11,7 @@ import settings from '../../app.settings';
 import { AuthModule } from '../auth/auth.module';
 import { ForecastsService } from '../forecasts/forecasts.service';
 import { roundUpDate } from '../../common/utils';
+import { CassandraModule } from '../../common/modules';
 
 describe('power-plants service test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -42,6 +43,20 @@ describe('power-plants service test', () => {
         AuthModule,
         PowerPlantsModule,
         MongooseModule.forRoot(settings.database.uri),
+        CassandraModule.forRoot({
+          cloud: {
+            secureConnectBundle:
+              settings.database.cassandra.pathToSecureConnectBundle,
+          },
+          credentials: {
+            username: settings.database.cassandra.credentials.username,
+            password: settings.database.cassandra.credentials.password,
+          },
+          keyspace: settings.database.cassandra.keyspace,
+          socketOptions: {
+            readTimeout: 0,
+          },
+        }),
       ],
     })
       .overrideProvider(ForecastsService)
