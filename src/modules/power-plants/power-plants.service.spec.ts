@@ -11,6 +11,7 @@ import settings from '../../app.settings';
 import { AuthModule } from '../auth/auth.module';
 import { ForecastsService } from '../forecasts/forecasts.service';
 import { roundUpDate } from '../../common/utils';
+import { CassandraModule } from '../../common/modules';
 
 describe('power-plants service test', () => {
   let moduleRef: TestingModuleBuilder,

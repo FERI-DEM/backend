@@ -1,6 +1,7 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -15,6 +16,9 @@ import { roundUpDate } from '../../common/utils';
 import { PowerPlant } from './schemas/power-plant.schema';
 import { UsersService } from '../users/users.service';
 import { Role } from '../../common/types';
+import { Client } from 'cassandra-driver';
+import { CASSANDRA_CLIENT } from '../../common/modules';
+import { getHistoricalDataById } from './utils/cassandra-queries';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -24,6 +28,7 @@ export class PowerPlantsService {
     private readonly powerPlantRepository: PowerPlantRepository,
     private readonly forecastService: ForecastsService,
     private readonly userService: UsersService,
+    @Inject(CASSANDRA_CLIENT) private readonly cassandraClient: Client,
   ) {}
 
   async create(userId: string, data: CreatePowerPlantDto) {
@@ -74,6 +79,24 @@ export class PowerPlantsService {
       throw new NotFoundException('Power plant not found');
     }
     return powerPlant;
+  }
+
+  async findPowerPlantWithHistoricData(userId: string, powerPlantId: string) {
+    const powerPlant = await this.powerPlantRepository.findPowerPlantById(
+      userId,
+      powerPlantId,
+    );
+
+    if (!powerPlant) {
+      throw new NotFoundException('Power plant not found');
+    }
+
+    const history = await getHistoricalDataById(
+      this.cassandraClient,
+      powerPlantId,
+    );
+
+    return { ...powerPlant.toObject(), history };
   }
 
   async findByUser(userId: string) {

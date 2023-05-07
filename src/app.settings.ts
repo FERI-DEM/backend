@@ -20,6 +20,17 @@ const settings = {
   },
   database: {
     uri: env.get('DB_URI').required(true).asString(),
+    cassandra: {
+      credentials: {
+        username: env.get('CASSANDRA_CLIENT_ID').required(true).asString(),
+        password: env.get('CASSANDRA_CLIENT_SECRET').required(true).asString(),
+      },
+      keyspace: env.get('CASSANDRA_KEYSPACE').required(true).asString(),
+      pathToSecureConnectBundle: env
+        .get('CASSANDRA_PATH_TO_BUNDLE')
+        .required(true)
+        .asString(),
+    },
   },
   services: {
     sentry: {

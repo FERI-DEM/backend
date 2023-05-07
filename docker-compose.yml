@@ -1,5 +1,17 @@
 version: '3.1'
 services:
+  cassandra:
+    image: cassandra:4.0
+    container_name: cassandra
+    restart: always
+    ports:
+      - "9042:9042"
+    volumes:
+        - ./data/cassandra:/var/lib/cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: "Cluster"
+      CASSANDRA_DC: "datacenter1"
+
   mongo:
     image: mongo:6.0
     container_name: mongo
