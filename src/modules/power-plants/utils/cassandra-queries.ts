@@ -20,7 +20,7 @@ export const getHistoricalDataById = async (
   );
 
   if (rowLength === 0) {
-    throw new Error('No data found');
+    return [];
   }
 
   return rows.map((row) => ({
