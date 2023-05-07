@@ -155,6 +155,25 @@ export class PowerPlantsService {
     );
   }
 
+  async predictByDays(userId: string, powerPlantId: string) {
+    const predictions = await this.predict(userId, powerPlantId);
+    const sumByDay = predictions.reduce(
+      (acc, curr) => {
+        const date = new Date(curr.date);
+        if (date.getDay() !== acc.currentDay) {
+          acc.result.push(0);
+          acc.currentDay = date.getDay();
+        }
+
+        acc.result[acc.result.length - 1] += curr.power;
+        return acc;
+      },
+      { result: [], currentDay: -1 },
+    );
+
+    return sumByDay.result;
+  }
+
   async predict(
     userId: string,
     powerPlantId: string,

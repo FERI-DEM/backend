@@ -52,6 +52,14 @@ export class PowerPlantsController {
   async predict(@Param('id') powerPlantId: string, @User('id') userId: string) {
     return await this.powerPlantService.predict(userId, powerPlantId);
   }
+  @Roles(Role.POWER_PLANT_OWNER)
+  @Get('predict-by-days/:id')
+  async predictByDays(
+    @Param('id') powerPlantId: string,
+    @User('id') userId: string,
+  ) {
+    return await this.powerPlantService.predictByDays(userId, powerPlantId);
+  }
 
   @Roles(Role.POWER_PLANT_OWNER)
   @Post('calibrate/:id')
