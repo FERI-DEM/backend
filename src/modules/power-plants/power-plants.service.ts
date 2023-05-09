@@ -36,8 +36,11 @@ export class PowerPlantsService {
       userId,
       data,
     );
+    const newPowerPlant = result.powerPlants.find(
+      (powerPlant) => powerPlant.displayName === data.displayName,
+    );
 
-    if (!result) {
+    if (!newPowerPlant) {
       throw new HttpException(
         'Could not create power plant',
         HttpStatus.BAD_REQUEST,
@@ -46,8 +49,7 @@ export class PowerPlantsService {
     if (result.powerPlants.length === 1) {
       await this.userService.addRole(userId, Role.POWER_PLANT_OWNER);
     }
-
-    return result;
+    return newPowerPlant;
   }
 
   async delete(userId: string, powerPlantId: string) {
