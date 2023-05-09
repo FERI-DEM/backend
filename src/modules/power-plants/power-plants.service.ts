@@ -11,7 +11,6 @@ import {
   CreatePowerPlantDto,
   UpdatePowerPlantDto,
 } from './dto';
-import { formatDateToNearestHour } from '../../common/utils';
 import { PowerPlant } from './schemas/power-plant.schema';
 import { UsersService } from '../users/users.service';
 import { Role } from '../../common/types';

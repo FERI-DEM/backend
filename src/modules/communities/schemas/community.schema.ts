@@ -13,6 +13,9 @@ export class Community {
   @Prop({ type: [MemberSchema], default: [] })
   members: Member[];
 
+  @Prop({ type: [String], default: [] })
+  powerPlantIds: string[];
+
   @Prop({ type: String, required: true })
   adminId: string;
 }
