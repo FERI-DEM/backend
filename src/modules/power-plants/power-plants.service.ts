@@ -11,7 +11,7 @@ import {
   CreatePowerPlantDto,
   UpdatePowerPlantDto,
 } from './dto';
-import { formatDateToNearestHour, roundUpDate } from '../../common/utils';
+import { formatDateToNearestHour } from '../../common/utils';
 import { PowerPlant } from './schemas/power-plant.schema';
 import { UsersService } from '../users/users.service';
 import { Role } from '../../common/types';
@@ -131,34 +131,21 @@ export class PowerPlantsService {
     const latitude = found.powerPlants[0].latitude;
     const longitude = found.powerPlants[0].longitude;
 
-    const forecasts = await this.forecastService.getWeather(
+    const forecast = await this.forecastService.getCurrentSolarRadiation(
       latitude,
       longitude,
     );
 
-    if (!forecasts) {
+    const { solar_10 } = forecast;
+
+    if (!solar_10) {
       throw new HttpException(
-        'Could not get solar radiation',
-        HttpStatus.BAD_REQUEST,
+        'Could not retrieve data for solar radiation',
+        HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    const dateStr = formatDateToNearestHour(new Date());
-
-    const forecast = forecasts.find(
-      (f) => new Date(f.timestamp).toISOString() === dateStr,
-    );
-
-    if (!forecast) {
-      throw new HttpException(
-        'Forecast does not exist for this date and time',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const { solar } = forecast;
-
-    if (solar <= 0) {
+    if (solar_10 <= 0) {
       throw new HttpException(
         'Please calibrate when solar radiation is greater than 0',
         HttpStatus.BAD_REQUEST,
@@ -172,7 +159,7 @@ export class PowerPlantsService {
       {
         ...data,
         date: new Date().toISOString(),
-        radiation: solar,
+        radiation: solar_10,
       },
     );
   }
@@ -210,9 +197,14 @@ export class PowerPlantsService {
       );
     }
 
-    const forecasts = await this.forecastService.getWeather(
+    // get weather forecast for next 7 days
+    const toDate = new Date();
+    toDate.setDate(toDate.getDate() + 7);
+
+    const forecasts = await this.forecastService.getSolarRadiationForecast(
       latitude,
       longitude,
+      toDate,
     );
 
     if (!forecasts) {
@@ -248,7 +240,7 @@ export class PowerPlantsService {
       );
     }
 
-    // predicted values for 7 days
+    // predicted values for 7 day
     return forecasts.map((f) => {
       const predictedPower = f.solar * coefficient;
       return {
