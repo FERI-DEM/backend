@@ -6,6 +6,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
+import { AxiosError } from 'axios';
 
 @Catch()
 export class ExceptionsFilter implements ExceptionFilter {
@@ -16,13 +17,22 @@ export class ExceptionsFilter implements ExceptionFilter {
 
     const ctx = host.switchToHttp();
 
-    const httpStatus =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    let httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+    if (exception instanceof HttpException) {
+      httpStatus = exception.getStatus();
+    }
 
-    const errorMessage =
-      (exception as Error).message || 'Internal server error';
+    if (exception instanceof AxiosError) {
+      httpStatus = exception.response?.status;
+    }
+
+    let errorMessage;
+
+    if (exception instanceof AxiosError) {
+      errorMessage = exception.response.data.description;
+    } else {
+      errorMessage = (exception as Error).message || 'Internal server error';
+    }
 
     const responseBody = {
       statusCode: httpStatus,

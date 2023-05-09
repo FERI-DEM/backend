@@ -22,3 +22,21 @@ export const roundUpDate = (date: string): string => {
   dateObj.setMilliseconds(0);
   return dateObj.toISOString();
 };
+
+export const formatDateToNearestHour = (date: Date): string => {
+  const minutes = date.getMinutes();
+
+  let roundedMinutes;
+  if (minutes < 30) {
+    roundedMinutes = 0;
+  }
+
+  if (minutes >= 30) {
+    roundedMinutes = 0;
+    date.setHours(date.getHours() + 1);
+  }
+  date.setMinutes(roundedMinutes);
+  date.setSeconds(0);
+  date.setMilliseconds(0);
+  return date.toISOString();
+};

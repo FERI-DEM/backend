@@ -11,14 +11,14 @@ import {
   CreatePowerPlantDto,
   UpdatePowerPlantDto,
 } from './dto';
-import { ForecastsService } from '../forecasts/forecasts.service';
-import { roundUpDate } from '../../common/utils';
+import { formatDateToNearestHour, roundUpDate } from '../../common/utils';
 import { PowerPlant } from './schemas/power-plant.schema';
 import { UsersService } from '../users/users.service';
 import { Role } from '../../common/types';
 import { Client } from 'cassandra-driver';
 import { CASSANDRA_CLIENT } from '../../common/modules';
 import { getHistoricalDataById } from './utils/cassandra-queries';
+import { BrightSkyAPI } from '../forecasts/strategies/bright-sky.strategy';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -26,7 +26,7 @@ import { getHistoricalDataById } from './utils/cassandra-queries';
 export class PowerPlantsService {
   constructor(
     private readonly powerPlantRepository: PowerPlantRepository,
-    private readonly forecastService: ForecastsService,
+    private readonly forecastService: BrightSkyAPI,
     private readonly userService: UsersService,
     @Inject(CASSANDRA_CLIENT) private readonly cassandraClient: Client,
   ) {}
@@ -131,10 +131,10 @@ export class PowerPlantsService {
     const latitude = found.powerPlants[0].latitude;
     const longitude = found.powerPlants[0].longitude;
 
-    const { forecasts } = await this.forecastService.getSolarRadiation({
-      lat: latitude,
-      lon: longitude,
-    });
+    const forecasts = await this.forecastService.getWeather(
+      latitude,
+      longitude,
+    );
 
     if (!forecasts) {
       throw new HttpException(
@@ -143,25 +143,24 @@ export class PowerPlantsService {
       );
     }
 
-    // TODO: maybe we should round up to the nearest hour
-    const date = roundUpDate(new Date().toISOString());
+    const dateStr = formatDateToNearestHour(new Date());
 
     const forecast = forecasts.find(
-      (f) => f.period_end.split('.')[0] === date.split('.')[0],
+      (f) => new Date(f.timestamp).toISOString() === dateStr,
     );
 
     if (!forecast) {
       throw new HttpException(
-        'Current hour is not in the forecast',
+        'Forecast does not exist for this date and time',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    const { ghi } = forecast;
+    const { solar } = forecast;
 
-    if (ghi <= 0) {
+    if (solar <= 0) {
       throw new HttpException(
-        'Please calibrate when there is sun',
+        'Please calibrate when solar radiation is greater than 0',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -173,7 +172,7 @@ export class PowerPlantsService {
       {
         ...data,
         date: new Date().toISOString(),
-        radiation: ghi,
+        radiation: solar,
       },
     );
   }
@@ -211,10 +210,10 @@ export class PowerPlantsService {
       );
     }
 
-    const { forecasts } = await this.forecastService.getSolarRadiation({
-      lat: latitude,
-      lon: longitude,
-    });
+    const forecasts = await this.forecastService.getWeather(
+      latitude,
+      longitude,
+    );
 
     if (!forecasts) {
       throw new HttpException(
@@ -251,9 +250,9 @@ export class PowerPlantsService {
 
     // predicted values for 7 days
     return forecasts.map((f) => {
-      const predictedPower = f.ghi * coefficient;
+      const predictedPower = f.solar * coefficient;
       return {
-        date: f.period_end,
+        date: f.timestamp,
         power: predictedPower,
       };
     });
