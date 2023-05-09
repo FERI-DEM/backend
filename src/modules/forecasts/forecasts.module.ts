@@ -13,6 +13,7 @@ import {
   PowerForecastRepository,
   SolarRadiationForecastRepository,
 } from './repositories';
+import { BrightSkyAPI } from './strategies/bright-sky.strategy';
 
 @Module({
   imports: [
@@ -26,8 +27,9 @@ import {
     ForecastsService,
     PowerForecastRepository,
     SolarRadiationForecastRepository,
+    BrightSkyAPI,
   ],
   controllers: [ForecastsController],
-  exports: [ForecastsService],
+  exports: [ForecastsService, BrightSkyAPI],
 })
 export class ForecastsModule {}

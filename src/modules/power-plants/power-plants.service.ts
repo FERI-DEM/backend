@@ -11,14 +11,14 @@ import {
   CreatePowerPlantDto,
   UpdatePowerPlantDto,
 } from './dto';
-import { ForecastsService } from '../forecasts/forecasts.service';
-import { roundUpDate } from '../../common/utils';
+import { formatDateToNearestHour } from '../../common/utils';
 import { PowerPlant } from './schemas/power-plant.schema';
 import { UsersService } from '../users/users.service';
 import { Role } from '../../common/types';
 import { Client } from 'cassandra-driver';
 import { CASSANDRA_CLIENT } from '../../common/modules';
 import { getHistoricalDataById } from './utils/cassandra-queries';
+import { BrightSkyAPI } from '../forecasts/strategies/bright-sky.strategy';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -26,7 +26,7 @@ import { getHistoricalDataById } from './utils/cassandra-queries';
 export class PowerPlantsService {
   constructor(
     private readonly powerPlantRepository: PowerPlantRepository,
-    private readonly forecastService: ForecastsService,
+    private readonly forecastService: BrightSkyAPI,
     private readonly userService: UsersService,
     @Inject(CASSANDRA_CLIENT) private readonly cassandraClient: Client,
   ) {}
@@ -133,37 +133,23 @@ export class PowerPlantsService {
     const latitude = found.powerPlants[0].latitude;
     const longitude = found.powerPlants[0].longitude;
 
-    const { forecasts } = await this.forecastService.getSolarRadiation({
-      lat: latitude,
-      lon: longitude,
-    });
-
-    if (!forecasts) {
-      throw new HttpException(
-        'Could not get solar radiation',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    // TODO: maybe we should round up to the nearest hour
-    const date = roundUpDate(new Date().toISOString());
-
-    const forecast = forecasts.find(
-      (f) => f.period_end.split('.')[0] === date.split('.')[0],
+    const forecast = await this.forecastService.getCurrentSolarRadiation(
+      latitude,
+      longitude,
     );
 
-    if (!forecast) {
+    const { solar_10 } = forecast;
+
+    if (!solar_10) {
       throw new HttpException(
-        'Current hour is not in the forecast',
-        HttpStatus.BAD_REQUEST,
+        'Could not retrieve data for solar radiation',
+        HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    const { ghi } = forecast;
-
-    if (ghi <= 0) {
+    if (solar_10 <= 0) {
       throw new HttpException(
-        'Please calibrate when there is sun',
+        'Please calibrate when solar radiation is greater than 0',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -175,7 +161,7 @@ export class PowerPlantsService {
       {
         ...data,
         date: new Date().toISOString(),
-        radiation: ghi,
+        radiation: solar_10,
       },
     );
   }
@@ -213,10 +199,15 @@ export class PowerPlantsService {
       );
     }
 
-    const { forecasts } = await this.forecastService.getSolarRadiation({
-      lat: latitude,
-      lon: longitude,
-    });
+    // get weather forecast for next 7 days
+    const toDate = new Date();
+    toDate.setDate(toDate.getDate() + 7);
+
+    const forecasts = await this.forecastService.getSolarRadiationForecast(
+      latitude,
+      longitude,
+      toDate,
+    );
 
     if (!forecasts) {
       throw new HttpException(
@@ -251,11 +242,11 @@ export class PowerPlantsService {
       );
     }
 
-    // predicted values for 7 days
+    // predicted values for 7 day
     return forecasts.map((f) => {
-      const predictedPower = f.ghi * coefficient;
+      const predictedPower = f.solar * coefficient;
       return {
-        date: f.period_end,
+        date: f.timestamp,
         power: predictedPower,
       };
     });
