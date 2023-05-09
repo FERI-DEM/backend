@@ -7,5 +7,6 @@ export interface Community {
     powerPlantId: string;
     powerPlantName: string;
     userName: string;
+    isAdmin: boolean;
   };
 }
