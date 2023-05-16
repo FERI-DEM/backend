@@ -27,8 +27,12 @@ export class PowerPlantsController {
   constructor(private readonly powerPlantService: PowerPlantsService) {}
 
   @Post()
-  async create(@Body() dto: CreatePowerPlantDto, @User('id') userId: string) {
-    return await this.powerPlantService.create(userId, dto);
+  async create(
+    @Body() dto: CreatePowerPlantDto,
+    @User('id') userId: string,
+    @User('userId') uid: string,
+  ) {
+    return await this.powerPlantService.create(userId, uid, dto);
   }
 
   @Roles(Role.POWER_PLANT_OWNER)

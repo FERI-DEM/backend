@@ -18,6 +18,8 @@ import { Client } from 'cassandra-driver';
 import { CASSANDRA_CLIENT } from '../../common/modules';
 import { getHistoricalDataById } from './utils/cassandra-queries';
 import { BrightSkyAPI } from '../forecasts/strategies/bright-sky.strategy';
+import { getAuth } from 'firebase-admin/auth';
+import { FirebaseService } from '../../common/services';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -27,16 +29,20 @@ export class PowerPlantsService {
     private readonly powerPlantRepository: PowerPlantRepository,
     private readonly forecastService: BrightSkyAPI,
     private readonly userService: UsersService,
+    private readonly firebase: FirebaseService,
     @Inject(CASSANDRA_CLIENT) private readonly cassandraClient: Client,
   ) {}
 
-  async create(userId: string, data: CreatePowerPlantDto) {
+  async create(userId: string, uid: string, data: CreatePowerPlantDto) {
     const result = await this.powerPlantRepository.createPowerPlant(
       userId,
       data,
     );
+    const newPowerPlant = result.powerPlants.find(
+      (powerPlant) => powerPlant.displayName === data.displayName,
+    );
 
-    if (!result) {
+    if (!newPowerPlant) {
       throw new HttpException(
         'Could not create power plant',
         HttpStatus.BAD_REQUEST,
@@ -46,7 +52,10 @@ export class PowerPlantsService {
       await this.userService.addRole(userId, Role.POWER_PLANT_OWNER);
     }
 
-    return result;
+    this.firebase.auth.setCustomUserClaims(uid, {
+      valid: true,
+    });
+    return newPowerPlant;
   }
 
   async delete(userId: string, powerPlantId: string) {
