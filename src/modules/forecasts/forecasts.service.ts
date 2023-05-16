@@ -34,10 +34,6 @@ export class ForecastsService {
     }
   }
 
-  async getCurrentSolarRadiation() {
-    return await this.bri.getCurrentSolarRadiation(46.0500268, 14.5069289);
-  }
-
   async getSolarRadiation(data: SolarRadiationDto) {
     return await this.solcast.getSolarRadiationForecast(data.lat, data.lon);
   }

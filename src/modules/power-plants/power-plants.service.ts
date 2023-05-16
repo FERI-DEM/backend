@@ -144,16 +144,16 @@ export class PowerPlantsService {
       longitude,
     );
 
-    const { solar_10 } = forecast;
+    const { solar } = forecast;
 
-    if (!solar_10) {
+    if (!solar) {
       throw new HttpException(
         'Could not retrieve data for solar radiation',
         HttpStatus.PRECONDITION_FAILED,
       );
     }
 
-    if (solar_10 <= 0) {
+    if (solar <= 0) {
       throw new HttpException(
         'Please calibrate when solar radiation is greater than 0',
         HttpStatus.BAD_REQUEST,
@@ -167,7 +167,7 @@ export class PowerPlantsService {
       {
         ...data,
         date: new Date().toISOString(),
-        radiation: solar_10,
+        radiation: solar,
       },
     );
   }

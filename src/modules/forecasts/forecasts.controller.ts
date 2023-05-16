@@ -17,15 +17,6 @@ import { AuthGuard } from '../auth/guards';
 export class ForecastsController {
   constructor(private readonly forecastsService: ForecastsService) {}
 
-  @Get('current')
-  async getCurrent() {
-    try {
-      return await this.forecastsService.getCurrentSolarRadiation();
-    } catch (e) {
-      throw new HttpException(e.message, e.status);
-    }
-  }
-
   @Get('weather/:lat/:lon')
   async getWeather(@Param() dto: WeatherForecastDto) {
     return await this.forecastsService.getWeather(dto);
