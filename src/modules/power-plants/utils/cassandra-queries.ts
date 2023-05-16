@@ -7,7 +7,7 @@ export interface HistoricalData {
   power: number;
   solar: number;
   predictedPower: number;
-  timestamp: string;
+  timestamp: number;
 }
 
 export const getHistoricalDataById = async (
@@ -32,15 +32,44 @@ export const getHistoricalDataById = async (
       timestamp: row.get('timestamp'),
     }))
     .sort((a, b) => {
-      const aTimestamp = new Date(a.timestamp).getTime();
-      const bTimestamp = new Date(b.timestamp).getTime();
-
-      if (aTimestamp > bTimestamp) {
-        return 1;
-      }
-      if (aTimestamp < bTimestamp) {
+      if (a.timestamp < b.timestamp) {
         return -1;
+      }
+      if (a.timestamp > b.timestamp) {
+        return 1;
       }
       return 0;
     });
+};
+
+export const insertHistoricPowerPlantData = async (
+  client: Client,
+  data: HistoricalData[],
+) => {
+  try {
+    const BATCH_SIZE = 4_000;
+    let batchCount = 1;
+    for (let i = 0; i < data.length; i += BATCH_SIZE) {
+      console.log(
+        `Inserting batch ${batchCount++}/${Math.ceil(
+          data.length / BATCH_SIZE,
+        )}`,
+      );
+      const batch = data.slice(i, i + BATCH_SIZE);
+      const queries = batch.map((item) => ({
+        query: `INSERT INTO power_plants (id, power_plant_id, power, solar, predicted_power, timestamp)
+                VALUES (uuid(), ?, ?, ?, ?, ?)`,
+        params: [
+          item.powerPlantId,
+          item.power,
+          item.solar,
+          item.predictedPower,
+          item.timestamp,
+        ],
+      }));
+      await client.batch(queries, { prepare: true });
+    }
+  } catch (e) {
+    console.log(e);
+  }
 };

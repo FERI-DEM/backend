@@ -65,4 +65,8 @@ export class PowerPlantRepository {
       { projection: { powerPlants: 1 }, new: true },
     );
   }
+
+  async findAll() {
+    return await this.model.find({}, { powerPlants: 1 });
+  }
 }

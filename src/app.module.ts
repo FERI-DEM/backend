@@ -10,8 +10,8 @@ import { CommunitiesModule } from './modules/communities/communities.module';
 import { CommonModule } from './common/common.module';
 import { PowerPlantsModule } from './modules/power-plants/power-plants.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { CassandraModule } from './common/modules';
-import settings from './app.settings';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CronModule } from './modules/cron/crons.module';
 
 @Module({
   imports: [
@@ -27,6 +27,8 @@ import settings from './app.settings';
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
+    CronModule,
     CommonModule,
     UsersModule,
     AuthModule,
