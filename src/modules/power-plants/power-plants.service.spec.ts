@@ -10,7 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import settings from '../../app.settings';
 import { AuthModule } from '../auth/auth.module';
 import { ForecastsService } from '../forecasts/forecasts.service';
-import { roundUpDate } from '../../common/utils';
+import { formatDateTo15minInterval } from '../../common/utils';
 import { CassandraModule } from '../../common/modules';
 
 describe('power-plants service test', () => {
@@ -26,7 +26,10 @@ describe('power-plants service test', () => {
       latitude: 30,
       longitude: 30,
       forecasts: [
-        { ghi: 1, period_end: roundUpDate(new Date().toISOString()) },
+        {
+          ghi: 1,
+          period_end: formatDateTo15minInterval(new Date().toISOString()),
+        },
       ],
     }),
   } as jest.Mocked<Pick<ForecastsService, 'getSolarRadiation'>>;
@@ -170,7 +173,10 @@ describe('power-plants service test', () => {
         latitude: 30,
         longitude: 30,
         forecasts: [
-          { ghi: 0, period_end: roundUpDate(new Date().toISOString()) },
+          {
+            ghi: 0,
+            period_end: formatDateTo15minInterval(new Date().toISOString()),
+          },
         ],
       }),
     });

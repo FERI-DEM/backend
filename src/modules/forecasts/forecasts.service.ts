@@ -10,6 +10,7 @@ import {
 import { PVPowerForecastDocument } from './schemas';
 import { SolcastAPI } from './strategies/solcast.strategy';
 import { BrightSkyAPI } from './strategies/bright-sky.strategy';
+import { OpenMeteoAPI } from './strategies/open-meteo.strategy';
 
 @Injectable()
 export class ForecastsService {

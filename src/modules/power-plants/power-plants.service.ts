@@ -17,9 +17,8 @@ import { Role } from '../../common/types';
 import { Client } from 'cassandra-driver';
 import { CASSANDRA_CLIENT } from '../../common/modules';
 import { getHistoricalDataById } from './utils/cassandra-queries';
-import { BrightSkyAPI } from '../forecasts/strategies/bright-sky.strategy';
-import { getAuth } from 'firebase-admin/auth';
 import { FirebaseService } from '../../common/services';
+import { OpenMeteoAPI } from '../forecasts/strategies/open-meteo.strategy';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -27,7 +26,7 @@ import { FirebaseService } from '../../common/services';
 export class PowerPlantsService {
   constructor(
     private readonly powerPlantRepository: PowerPlantRepository,
-    private readonly forecastService: BrightSkyAPI,
+    private readonly forecastService: OpenMeteoAPI,
     private readonly userService: UsersService,
     private readonly firebase: FirebaseService,
     @Inject(CASSANDRA_CLIENT) private readonly cassandraClient: Client,
@@ -205,7 +204,6 @@ export class PowerPlantsService {
     const forecasts = await this.forecastService.getSolarRadiationForecast(
       latitude,
       longitude,
-      toDate,
     );
 
     if (!forecasts) {

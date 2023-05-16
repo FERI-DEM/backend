@@ -15,6 +15,7 @@ import {
 } from './repositories';
 import { BrightSkyAPI } from './strategies/bright-sky.strategy';
 import { SolcastAPI } from './strategies/solcast.strategy';
+import { OpenMeteoAPI } from './strategies/open-meteo.strategy';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { SolcastAPI } from './strategies/solcast.strategy';
     SolarRadiationForecastRepository,
     BrightSkyAPI,
     SolcastAPI,
+    OpenMeteoAPI,
   ],
   controllers: [ForecastsController],
   exports: [ForecastsService, BrightSkyAPI, SolcastAPI],

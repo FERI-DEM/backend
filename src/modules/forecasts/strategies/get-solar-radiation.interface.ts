@@ -5,4 +5,6 @@ export interface Weather {
 
 export interface GetSolarRadiationInterface {
   getSolarRadiationForecast(lat: number, lon: number): Promise<Weather[]>;
+
+  getCurrentSolarRadiation(lat: number, lon: number): Promise<Weather>;
 }

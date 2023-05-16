@@ -52,4 +52,8 @@ export class SolcastAPI implements GetSolarRadiationInterface {
       solar: forecast.ghi,
     }));
   }
+
+  async getCurrentSolarRadiation(lat: number, lon: number): Promise<Weather> {
+    throw new Error('Method not implemented.');
+  }
 }

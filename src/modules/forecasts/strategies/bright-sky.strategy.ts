@@ -30,20 +30,6 @@ export class BrightSkyAPI implements GetSolarRadiationInterface {
     return data.weather;
   }
 
-  // async getCurrentSolarRadiation(lat: number, lon: number) {
-  //   console.log(`${this.baseUrl}/current_weather?lat=${lat}&lon=${lon}`);
-  //   const { data } = (await this.httpService.axiosRef.get(
-  //     `${this.baseUrl}/current_weather?lat=${lat}&lon=${lon}`,
-  //   )) as AxiosResponse<{
-  //     weather: {
-  //       solar_10: number;
-  //       solar_30: number;
-  //       solar_60: number;
-  //     };
-  //   }>;
-  //   return data.weather;
-  // }
-
   async getCurrentSolarRadiation(lat: number, lon: number): Promise<Weather> {
     const forecasts = await this.getSolarRadiationForecast(lat, lon);
     const dateString = formatDateToNearestHour(new Date()).split('T')[0];
