@@ -146,13 +146,6 @@ export class PowerPlantsService {
 
     const { solar } = forecast;
 
-    if (!solar) {
-      throw new HttpException(
-        'Could not retrieve data for solar radiation',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
     if (solar <= 0) {
       throw new HttpException(
         'Please calibrate when solar radiation is greater than 0',

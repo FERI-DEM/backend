@@ -46,7 +46,6 @@ export class BrightSkyAPI implements GetSolarRadiationInterface {
 
   async getCurrentSolarRadiation(lat: number, lon: number): Promise<Weather> {
     const forecasts = await this.getSolarRadiationForecast(lat, lon);
-    console.log(forecasts);
     const dateString = formatDateToNearestHour(new Date()).split('T')[0];
 
     return forecasts.find((forecast) => {
