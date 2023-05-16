@@ -1,18 +1,14 @@
 export enum NotificationType {
-  INVITATION = 'invitation',
+  REQUEST_TO_JOIN = 'request_to_join',
   WARNING = 'warning',
 }
 
-/*
-  @to - userId
-  @from - userId
- */
 export interface Notification<T> {
   id: string;
-  to: string;
-  from: string;
+  receiverId: string;
+  senderId: string;
   type: NotificationType;
   data: T;
-  read: boolean;
+  processed: boolean;
   createdAt: string;
 }

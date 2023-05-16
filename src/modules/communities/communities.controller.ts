@@ -9,11 +9,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AddMemberDto, CreateCommunityDto } from './dto';
+import { AddMemberDto, CreateCommunityDto, RequestToJoinDto } from './dto';
 import { CommunitiesService } from './communities.service';
 import { Roles, User } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../auth/guards';
 import { Role } from '../../common/types';
+import { ProcessRequestDto } from './dto/process-request.dto';
 
 @ApiTags('communities')
 @ApiBearerAuth()
@@ -80,5 +81,22 @@ export class CommunitiesController {
     @User('id') userId: string,
   ) {
     return await this.communitiesService.leave(userId, communityId);
+  }
+
+  @Post('request-to-join')
+  async requestToJoin(
+    @User('id') userId: string,
+    @Body() dto: RequestToJoinDto,
+  ) {
+    return await this.communitiesService.requestToJoin({ ...dto, userId });
+  }
+
+  @Roles(Role.COMMUNITY_ADMIN)
+  @Patch('process-request')
+  async processRequest(
+    @User('id') adminId: string,
+    @Body() dto: ProcessRequestDto,
+  ) {
+    return await this.communitiesService.processRequest({ ...dto, adminId });
   }
 }

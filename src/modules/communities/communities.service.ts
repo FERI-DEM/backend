@@ -5,19 +5,24 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCommunityDto } from './dto';
+import { CreateCommunityDto, RequestToJoinDto } from './dto';
 import { UsersService } from '../users/users.service';
-import { Role } from '../../common/types';
+import { NotificationType, Role } from '../../common/types';
 import { CommunityRepository } from './repository/community.repository';
 import { CommunityDocument } from './schemas/community.schema';
 import mongoose from 'mongoose';
 import { Community } from './types/community.types';
+import { PowerPlantsService } from '../power-plants/power-plants.service';
+import { NotificationsService } from '../../common/services';
+import { ProcessRequestDto } from './dto/process-request.dto';
 
 @Injectable()
 export class CommunitiesService {
   constructor(
     private readonly communityRepository: CommunityRepository,
     private readonly usersService: UsersService,
+    private readonly powerPlantsService: PowerPlantsService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   async isMemberOfAdminsCommunity(
@@ -224,6 +229,148 @@ export class CommunitiesService {
     await this.communityRepository.findOneAndUpdate(
       { _id: communityId },
       { $pull: { membersIds: memberId } },
+    );
+
+    const memberCommunities = await this.findByUser(memberId);
+
+    if (memberCommunities.length === 0) {
+      await this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
+    }
+
+    return true;
+  }
+
+  async requestToJoin(data: RequestToJoinDto & { userId: string }) {
+    const community = await this.communityRepository.findOne({
+      _id: data.communityId,
+    });
+
+    if (!community) {
+      throw new NotFoundException('Community not found');
+    }
+
+    const { powerPlants } = await this.powerPlantsService.findByUser(
+      data.userId,
+    );
+
+    // check if user owns power plants
+    const isOwnerOfPowerPlants = data.powerPlants.every((powerPlant) =>
+      powerPlants.find((p) => p._id.toString() === powerPlant),
+    );
+
+    if (!isOwnerOfPowerPlants) {
+      throw new HttpException(
+        'You do not own all power plants that you want to join the community with',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const user = await this.usersService.findById(data.userId);
+
+    await this.notificationService.send({
+      type: NotificationType.REQUEST_TO_JOIN,
+      receiverId: community.adminId,
+      senderId: data.userId,
+      data: {
+        communityId: data.communityId,
+        userId: data.userId,
+        powerPlants: data.powerPlants,
+        message: `User with email ${user.email} wants to join your ${community.name} community with ${data.powerPlants.length} power plants`,
+      },
+    });
+
+    return { status: 'ok', message: 'Request sent successfully' };
+  }
+
+  async processRequest(data: ProcessRequestDto & { adminId: string }) {
+    const notification = await this.notificationService.process<{
+      communityId: string;
+      userId: string;
+      powerPlants: string[];
+    }>(data.notificationId, data.adminId);
+
+    if (!data.accepted) return { status: 'ok', message: 'Request rejected' };
+
+    await this.addPowerPlants(
+      notification.data.powerPlants,
+      notification.data.communityId,
+      data.adminId,
+      notification.data.userId,
+    );
+  }
+
+  async addPowerPlants(
+    powerPlants: string[],
+    communityId: string,
+    adminId: string,
+    memberId: string,
+  ): Promise<boolean> {
+    const isAdmin = await this.isCommunityAdmin(communityId, adminId);
+
+    if (!isAdmin) {
+      throw new HttpException(
+        'You can not add member to this community',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
+    const member = await this.usersService.findById(memberId);
+    if (!member) {
+      throw new HttpException('Member not found', HttpStatus.BAD_REQUEST);
+    }
+
+    // check if some of powerPlantsIds are already in this community  powerPlantIds
+    const community = await this.communityRepository.findOne({
+      _id: communityId,
+      powerPlantIds: { $in: powerPlants },
+    });
+
+    if (community) {
+      throw new HttpException(
+        'Power plant is already in community',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.communityRepository.findOneAndUpdate(
+      { _id: communityId },
+      { $push: { powerPlantIds: powerPlants } },
+    );
+
+    await this.usersService.addRole(memberId, Role.COMMUNITY_MEMBER);
+
+    return true;
+  }
+
+  async removePowerPlants(
+    powerPlants: string[],
+    memberId: string,
+    communityId: string,
+    adminId: string,
+  ): Promise<boolean> {
+    if (adminId === memberId) {
+      throw new HttpException(
+        'Admin can not remove himself',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const isMember = await this.isMemberOfAdminsCommunity(
+      memberId,
+      communityId,
+      adminId,
+    );
+
+    if (!isMember) {
+      throw new HttpException(
+        'You can not remove member from this community',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.communityRepository.findOneAndUpdate(
+      { _id: communityId },
+      { $pull: { powerPlantIds: powerPlants } },
     );
 
     const memberCommunities = await this.findByUser(memberId);
