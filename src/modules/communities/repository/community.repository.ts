@@ -59,6 +59,7 @@ export class CommunityRepository extends EntityRepository<CommunityDocument> {
           $group: {
             _id: '$_id',
             name: { $first: '$name' },
+            adminId: { $first: '$adminId' },
             members: {
               $push: {
                 userId: '$user._id',
@@ -67,6 +68,9 @@ export class CommunityRepository extends EntityRepository<CommunityDocument> {
                 },
                 powerPlantId: '$powerPlant.powerPlants._id',
                 powerPlantName: '$powerPlant.powerPlants.displayName',
+                isAdmin: {
+                  $eq: [{ $toString: '$adminId' }, { $toString: '$user._id' }],
+                },
               },
             },
           },
