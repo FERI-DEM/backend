@@ -34,6 +34,6 @@ import { OpenMeteoAPI } from './strategies/open-meteo.strategy';
     OpenMeteoAPI,
   ],
   controllers: [ForecastsController],
-  exports: [ForecastsService, BrightSkyAPI, SolcastAPI],
+  exports: [ForecastsService, BrightSkyAPI, SolcastAPI, OpenMeteoAPI],
 })
 export class ForecastsModule {}
