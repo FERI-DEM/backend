@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/axios';
+import { HttpModule, HttpService } from '@nestjs/axios';
 import { ForecastsService } from './forecasts.service';
 import { ForecastsController } from './forecasts.controller';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -14,6 +14,7 @@ import {
   SolarRadiationForecastRepository,
 } from './repositories';
 import { BrightSkyAPI } from './strategies/bright-sky.strategy';
+import { SolcastAPI } from './strategies/solcast.strategy';
 
 @Module({
   imports: [
@@ -28,8 +29,9 @@ import { BrightSkyAPI } from './strategies/bright-sky.strategy';
     PowerForecastRepository,
     SolarRadiationForecastRepository,
     BrightSkyAPI,
+    SolcastAPI,
   ],
   controllers: [ForecastsController],
-  exports: [ForecastsService, BrightSkyAPI],
+  exports: [ForecastsService, BrightSkyAPI, SolcastAPI],
 })
 export class ForecastsModule {}

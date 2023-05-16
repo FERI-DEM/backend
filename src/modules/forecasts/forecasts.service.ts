@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import type { AxiosError, AxiosResponse } from 'axios';
 import { PvPowerDto, SolarRadiationDto, WeatherForecastDto } from './dto';
@@ -7,8 +7,9 @@ import {
   PowerForecastRepository,
   SolarRadiationForecastRepository,
 } from './repositories';
-import { PVPowerForecastDocument, SolarRadiation } from './schemas';
-import { Logger as NestLogger } from '@nestjs/common';
+import { PVPowerForecastDocument } from './schemas';
+import { SolcastAPI } from './strategies/solcast.strategy';
+import { BrightSkyAPI } from './strategies/bright-sky.strategy';
 
 @Injectable()
 export class ForecastsService {
@@ -16,6 +17,8 @@ export class ForecastsService {
     private readonly httpService: HttpService,
     private readonly powerForecastRep: PowerForecastRepository,
     private readonly solarRadiationRep: SolarRadiationForecastRepository,
+    private readonly bri: BrightSkyAPI,
+    private readonly solcast: SolcastAPI,
   ) {}
 
   async getWeather(data: WeatherForecastDto): Promise<AxiosResponse> {
@@ -31,36 +34,12 @@ export class ForecastsService {
     }
   }
 
-  async getSolarRadiation(data: SolarRadiationDto): Promise<SolarRadiation> {
-    const { lat, lon } = data;
+  async getCurrentSolarRadiation() {
+    return await this.bri.getCurrentSolarRadiation(46.0500268, 14.5069289);
+  }
 
-    const date = new Date();
-    date.setHours(date.getHours() - 6);
-
-    const forecast = await this.solarRadiationRep.findOne({
-      latitude: lat,
-      longitude: lon,
-      createdAt: { $gte: date },
-    });
-
-    if (!forecast) {
-      try {
-        NestLogger.log('Fetching new solar radiation forecast');
-        const { data: response } = await this.httpService.axiosRef.get(
-          `https://api.solcast.com.au/world_radiation/forecasts?latitude=-${lat}&longitude=${lon}&hours=168&api_key=${settings.secrets.solcast}`,
-        );
-        await this.solarRadiationRep.create({
-          ...response,
-          latitude: lat,
-          longitude: lon,
-        });
-        return response;
-      } catch (e) {
-        throw new HttpException(e.message, 400);
-      }
-    }
-
-    return forecast;
+  async getSolarRadiation(data: SolarRadiationDto) {
+    return await this.solcast.getSolarRadiationForecast(data.lat, data.lon);
   }
 
   async getPVPower(data: PvPowerDto): Promise<PVPowerForecastDocument> {

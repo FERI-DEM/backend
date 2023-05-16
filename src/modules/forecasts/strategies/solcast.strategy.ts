@@ -7,7 +7,9 @@ import { SolarRadiationForecastRepository } from '../repositories';
 import settings from '../../../app.settings';
 import { AxiosResponse } from 'axios';
 import { SolarRadiation } from '../schemas';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class SolcastAPI implements GetSolarRadiationInterface {
   constructor(
     private readonly httpService: HttpService,
@@ -37,7 +39,7 @@ export class SolcastAPI implements GetSolarRadiationInterface {
     }
 
     const { data: response } = (await this.httpService.axiosRef.get(
-      `https://api.solcast.com.au/world_radiation/forecasts?latitude=-${lat}&longitude=${lon}&hours=168&api_key=${settings.secrets.solcast}`,
+      `${this.baseUrl}/world_radiation/forecasts?latitude=-${lat}&longitude=${lon}&hours=168&api_key=${settings.secrets.solcast}`,
     )) as AxiosResponse<SolarRadiation>;
     await this.solarRadiationRep.create({
       ...response,

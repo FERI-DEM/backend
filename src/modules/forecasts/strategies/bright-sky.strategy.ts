@@ -21,13 +21,16 @@ export class BrightSkyAPI implements GetSolarRadiationInterface {
     const lastDateString = lastDate?.toISOString().split('T')[0];
 
     const { data } = (await this.httpService.axiosRef.get(
-      `${this.baseUrl}/weather?lat=${lat}&lon=${lon}&date=${dateString}&last_date=${lastDateString}`,
+      `${this.baseUrl}/weather?lat=${lat}&lon=${lon}&date=${dateString}${
+        lastDateString ? `&lastDate=${lastDateString}` : ''
+      }`,
     )) as AxiosResponse<{ weather: Weather[] }>;
     // TODO: we need to match type of solar to the whole app
     return data.weather;
   }
 
   async getCurrentSolarRadiation(lat: number, lon: number) {
+    console.log(`${this.baseUrl}/current_weather?lat=${lat}&lon=${lon}`);
     const { data } = (await this.httpService.axiosRef.get(
       `${this.baseUrl}/current_weather?lat=${lat}&lon=${lon}`,
     )) as AxiosResponse<{
