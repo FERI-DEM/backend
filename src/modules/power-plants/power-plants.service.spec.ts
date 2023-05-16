@@ -10,8 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import settings from '../../app.settings';
 import { AuthModule } from '../auth/auth.module';
 import { ForecastsService } from '../forecasts/forecasts.service';
-import { formatDateTo15minInterval } from '../../common/utils';
-import { CassandraModule } from '../../common/modules';
+import { roundUpDate } from '../../common/utils';
 
 describe('power-plants service test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -28,7 +27,7 @@ describe('power-plants service test', () => {
       forecasts: [
         {
           ghi: 1,
-          period_end: formatDateTo15minInterval(new Date().toISOString()),
+          period_end: roundUpDate(new Date().toISOString()),
         },
       ],
     }),
@@ -175,7 +174,7 @@ describe('power-plants service test', () => {
         forecasts: [
           {
             ghi: 0,
-            period_end: formatDateTo15minInterval(new Date().toISOString()),
+            period_end: roundUpDate(new Date().toISOString()),
           },
         ],
       }),
