@@ -16,7 +16,11 @@ import { UsersService } from '../users/users.service';
 import { Role } from '../../common/types';
 import { Client } from 'cassandra-driver';
 import { CASSANDRA_CLIENT } from '../../common/modules';
-import { getHistoricalDataById } from './utils/cassandra-queries';
+import {
+  getHistoricalDataById,
+  HistoricalData,
+  insertHistoricPowerPlantData,
+} from './utils/cassandra-queries';
 import { FirebaseService } from '../../common/services';
 import { OpenMeteoAPI } from '../forecasts/strategies/open-meteo.strategy';
 
@@ -31,6 +35,46 @@ export class PowerPlantsService {
     private readonly firebase: FirebaseService,
     @Inject(CASSANDRA_CLIENT) private readonly cassandraClient: Client,
   ) {}
+
+  private async findAll() {
+    return await this.powerPlantRepository.findAll();
+  }
+
+  async saveHistoricalData(): Promise<void> {
+    const powerPlants: { _id: string; powerPlants: PowerPlant[] }[] =
+      await this.findAll();
+
+    const arr: HistoricalData[] = [];
+
+    for (const user of powerPlants) {
+      for (const powerPlant of user.powerPlants) {
+        const { latitude, longitude, _id } = powerPlant;
+        const weather = await this.forecastService.getCurrentSolarRadiation(
+          latitude,
+          longitude,
+        );
+
+        let predictedPower = 0;
+        if (powerPlant.calibration.length !== 0) {
+          const predictions = await this.predict(
+            user._id.toString(),
+            _id.toString(),
+          );
+          predictedPower = predictions.find(
+            (p) => p.date === weather.timestamp,
+          )?.power;
+        }
+        arr.push({
+          powerPlantId: _id.toString(),
+          solar: weather.solar,
+          power: 0,
+          predictedPower: predictedPower,
+          timestamp: new Date(weather.timestamp).getTime(),
+        });
+      }
+    }
+    await insertHistoricPowerPlantData(this.cassandraClient, arr);
+  }
 
   async create(userId: string, uid: string, data: CreatePowerPlantDto) {
     const calibrationValue = data.maxPower / (0.2 * data.size);

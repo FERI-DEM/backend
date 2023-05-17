@@ -61,7 +61,7 @@ export class OpenMeteoAPI implements GetSolarRadiationInterface {
 
   async getCurrentSolarRadiation(lat: number, lon: number): Promise<Weather> {
     const forecast = await this.getSolarRadiationForecast(lat, lon);
-    const dateStr = formatDateTo15minInterval(new Date()).split('.')[0];
+    const dateStr = formatDateTo15minInterval(new Date());
     return forecast.find((f) => f.timestamp === dateStr);
   }
 }

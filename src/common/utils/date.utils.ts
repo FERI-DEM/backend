@@ -65,6 +65,5 @@ export const formatDateTo15minInterval = (date: Date): string => {
   date.setMinutes(roundedMinutes);
   date.setSeconds(0);
   date.setMilliseconds(0);
-
-  return date.toISOString().split(':00')[0];
+  return date.toISOString().slice(0, -8);
 };
