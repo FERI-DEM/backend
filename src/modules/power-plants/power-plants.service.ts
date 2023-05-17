@@ -33,10 +33,14 @@ export class PowerPlantsService {
   ) {}
 
   async create(userId: string, uid: string, data: CreatePowerPlantDto) {
-    const result = await this.powerPlantRepository.createPowerPlant(
-      userId,
-      data,
-    );
+    const calibrationValue = data.maxPower / (0.2 * data.size);
+
+    const result = await this.powerPlantRepository.createPowerPlant(userId, {
+      ...data,
+      calibration: [
+        { date: new Date().toISOString(), value: calibrationValue },
+      ],
+    });
     const newPowerPlant = result.powerPlants.find(
       (powerPlant) => powerPlant.displayName === data.displayName,
     );
@@ -157,9 +161,8 @@ export class PowerPlantsService {
       userId,
       powerPlantId,
       {
-        ...data,
         date: new Date().toISOString(),
-        radiation: solar,
+        value: data.power / solar,
       },
     );
   }
@@ -214,23 +217,23 @@ export class PowerPlantsService {
     }
 
     // TODO: last calibration or average
-    const { power, radiation } = calibration[calibration.length - 1];
+    // const { power, radiation } = calibration[calibration.length - 1];
+    //
+    // if (radiation <= 0) {
+    //   throw new HttpException(
+    //     'Radiation can not be 0 or lower',
+    //     HttpStatus.PRECONDITION_FAILED,
+    //   );
+    // }
+    //
+    // if (power <= 0) {
+    //   throw new HttpException(
+    //     'Power can not be 0 or lower',
+    //     HttpStatus.PRECONDITION_FAILED,
+    //   );
+    // }
 
-    if (radiation <= 0) {
-      throw new HttpException(
-        'Radiation can not be 0 or lower',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
-    if (power <= 0) {
-      throw new HttpException(
-        'Power can not be 0 or lower',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
-    const coefficient = power / radiation;
+    const coefficient = calibration[calibration.length - 1].value;
 
     if (coefficient <= 0) {
       throw new HttpException(

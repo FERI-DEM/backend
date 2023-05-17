@@ -14,8 +14,14 @@ export class PowerPlant {
   @Prop({ type: Number })
   longitude: number;
 
+  @Prop({ type: Number })
+  maxPower: number;
+
+  @Prop({ type: Number })
+  size: number;
+
   @Prop({ type: Array, default: [] })
-  calibration: { date: string; power: number; radiation: number }[];
+  calibration: { date: string; value: number }[];
 }
 
 export type PowerPlantDocument = PowerPlant & mongoose.Document;

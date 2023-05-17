@@ -3,13 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../../users/schemas/user.schema';
 import { CreatePowerPlantDto, UpdatePowerPlantDto } from '../dto';
 import { Model } from 'mongoose';
-import { Calibration } from '../types';
+import { Calibration, CreatePowerPlantWithCalibration } from '../types';
 
 @Injectable()
 export class PowerPlantRepository {
   constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
 
-  async createPowerPlant(userId: string, data: CreatePowerPlantDto) {
+  async createPowerPlant(
+    userId: string,
+    data: CreatePowerPlantWithCalibration,
+  ) {
     return this.model.findOneAndUpdate(
       { _id: userId },
       { $push: { powerPlants: data } },
@@ -17,6 +20,17 @@ export class PowerPlantRepository {
     );
   }
 
+  async initializeCalibration(
+    userId: string,
+    powerPlantId: string,
+    data: { date: string; value: number }[],
+  ) {
+    return this.model.findOneAndUpdate(
+      { _id: userId, 'powerPlants._id': powerPlantId },
+      { $set: { 'powerPlants.$.calibration': [] } },
+      { new: true },
+    );
+  }
   async createCalibration(userId: string, powerPlantId, data: Calibration) {
     return this.model.findOneAndUpdate(
       { _id: userId, 'powerPlants._id': powerPlantId },
