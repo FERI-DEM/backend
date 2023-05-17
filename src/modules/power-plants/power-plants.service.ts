@@ -36,10 +36,6 @@ export class PowerPlantsService {
     @Inject(CASSANDRA_CLIENT) private readonly cassandraClient: Client,
   ) {}
 
-  private async findAll() {
-    return await this.powerPlantRepository.findAll();
-  }
-
   async saveHistoricalData(): Promise<void> {
     const powerPlants: { _id: string; powerPlants: PowerPlant[] }[] =
       await this.findAll();
@@ -213,6 +209,7 @@ export class PowerPlantsService {
 
   async predictByDays(userId: string, powerPlantId: string) {
     const predictions = await this.predict(userId, powerPlantId);
+
     const sumByDay = predictions.reduce(
       (acc, curr) => {
         const date = new Date(curr.date);
@@ -221,7 +218,7 @@ export class PowerPlantsService {
           acc.currentDay = date.getDay();
         }
 
-        acc.result[acc.result.length - 1] += curr.power;
+        acc.result[acc.result.length - 1] += curr.power * 0.25;
         return acc;
       },
       { result: [], currentDay: -1 },
@@ -294,5 +291,9 @@ export class PowerPlantsService {
         power: predictedPower,
       };
     });
+  }
+
+  private async findAll() {
+    return await this.powerPlantRepository.findAll();
   }
 }
