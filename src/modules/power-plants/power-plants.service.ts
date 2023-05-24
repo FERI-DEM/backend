@@ -36,10 +36,6 @@ export class PowerPlantsService {
     @Inject(CASSANDRA_CLIENT) private readonly cassandraClient: Client,
   ) {}
 
-  private async findAll() {
-    return await this.powerPlantRepository.findAll();
-  }
-
   async saveHistoricalData(): Promise<void> {
     const powerPlants: { _id: string; powerPlants: PowerPlant[] }[] =
       await this.findAll();
@@ -77,10 +73,14 @@ export class PowerPlantsService {
   }
 
   async create(userId: string, uid: string, data: CreatePowerPlantDto) {
-    const result = await this.powerPlantRepository.createPowerPlant(
-      userId,
-      data,
-    );
+    const calibrationValue = data.maxPower / (0.2 * data.size);
+
+    const result = await this.powerPlantRepository.createPowerPlant(userId, {
+      ...data,
+      calibration: [
+        { date: new Date().toISOString(), value: calibrationValue },
+      ],
+    });
     const newPowerPlant = result.powerPlants.find(
       (powerPlant) => powerPlant.displayName === data.displayName,
     );
@@ -201,15 +201,15 @@ export class PowerPlantsService {
       userId,
       powerPlantId,
       {
-        ...data,
         date: new Date().toISOString(),
-        radiation: solar,
+        value: data.power / solar,
       },
     );
   }
 
   async predictByDays(userId: string, powerPlantId: string) {
     const predictions = await this.predict(userId, powerPlantId);
+
     const sumByDay = predictions.reduce(
       (acc, curr) => {
         const date = new Date(curr.date);
@@ -218,7 +218,7 @@ export class PowerPlantsService {
           acc.currentDay = date.getDay();
         }
 
-        acc.result[acc.result.length - 1] += curr.power;
+        acc.result[acc.result.length - 1] += curr.power * 0.25;
         return acc;
       },
       { result: [], currentDay: -1 },
@@ -258,23 +258,23 @@ export class PowerPlantsService {
     }
 
     // TODO: last calibration or average
-    const { power, radiation } = calibration[calibration.length - 1];
+    // const { power, radiation } = calibration[calibration.length - 1];
+    //
+    // if (radiation <= 0) {
+    //   throw new HttpException(
+    //     'Radiation can not be 0 or lower',
+    //     HttpStatus.PRECONDITION_FAILED,
+    //   );
+    // }
+    //
+    // if (power <= 0) {
+    //   throw new HttpException(
+    //     'Power can not be 0 or lower',
+    //     HttpStatus.PRECONDITION_FAILED,
+    //   );
+    // }
 
-    if (radiation <= 0) {
-      throw new HttpException(
-        'Radiation can not be 0 or lower',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
-    if (power <= 0) {
-      throw new HttpException(
-        'Power can not be 0 or lower',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
-    const coefficient = power / radiation;
+    const coefficient = calibration[calibration.length - 1].value;
 
     if (coefficient <= 0) {
       throw new HttpException(
@@ -291,5 +291,9 @@ export class PowerPlantsService {
         power: predictedPower,
       };
     });
+  }
+
+  private async findAll() {
+    return await this.powerPlantRepository.findAll();
   }
 }

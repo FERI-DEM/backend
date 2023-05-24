@@ -1,4 +1,4 @@
-import { IsLatitude, IsLongitude, IsString } from 'class-validator';
+import { IsLatitude, IsLongitude, IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePowerPlantDto {
@@ -13,4 +13,12 @@ export class CreatePowerPlantDto {
   @ApiProperty()
   @IsString()
   displayName: string;
+
+  @ApiProperty()
+  @IsNumber()
+  maxPower: number;
+
+  @ApiProperty()
+  @IsNumber()
+  size: number;
 }
