@@ -57,4 +57,8 @@ FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
 FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
 FIREBASE_AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
 FIREBASE_CLIENT_X509_CERT_URL=https://www.google
+CASSANDRA_CLIENT_ID=test
+CASSANDRA_CLIENT_SECRET=test
+CASSANDRA_KEYSPACE=w4c
+CASSANDRA_PATH_TO_BUNDLE=./secure-connect-watt4cast-historical.zip
 ```
