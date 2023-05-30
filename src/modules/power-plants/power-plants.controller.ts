@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -25,6 +26,22 @@ import { Role } from '../../common/types';
 @Controller('power-plants')
 export class PowerPlantsController {
   constructor(private readonly powerPlantService: PowerPlantsService) {}
+
+  @Roles(Role.POWER_PLANT_OWNER)
+  @Get('history')
+  async history(
+    @User('id') userId: string,
+    @Query('powerPlantIds') powerPlantIds: string[],
+    @Query('dateFrom') dateFrom?: Date,
+    @Query('dateTo') dateTo?: Date,
+  ) {
+    return await this.powerPlantService.history(
+      userId,
+      powerPlantIds,
+      dateFrom,
+      dateTo,
+    );
+  }
 
   @Post()
   async create(
