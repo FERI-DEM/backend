@@ -27,6 +27,22 @@ import { Role } from '../../common/types';
 export class PowerPlantsController {
   constructor(private readonly powerPlantService: PowerPlantsService) {}
 
+  @Roles(Role.POWER_PLANT_OWNER)
+  @Get('history')
+  async history(
+    @User('id') userId: string,
+    @Query('powerPlantIds') powerPlantIds: string[],
+    @Query('dateFrom') dateFrom?: Date,
+    @Query('dateTo') dateTo?: Date,
+  ) {
+    return await this.powerPlantService.history(
+      userId,
+      powerPlantIds,
+      dateFrom,
+      dateTo,
+    );
+  }
+
   @Post()
   async create(
     @Body() dto: CreatePowerPlantDto,
@@ -53,22 +69,6 @@ export class PowerPlantsController {
     @User('id') userId: string,
   ) {
     return await this.powerPlantService.update(userId, powerPlantId, dto);
-  }
-
-  @Roles(Role.POWER_PLANT_OWNER)
-  @Get('history/:id')
-  async history(
-    @User('id') userId: string,
-    @Query('powerPlantIds') powerPlantIds: string[],
-    @Query('dateFrom') dateFrom?: Date,
-    @Query('dateTo') dateTo?: Date,
-  ) {
-    return await this.powerPlantService.history(
-      userId,
-      powerPlantIds,
-      dateFrom,
-      dateTo,
-    );
   }
 
   @Roles(Role.POWER_PLANT_OWNER)
