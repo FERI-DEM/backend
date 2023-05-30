@@ -17,6 +17,7 @@ import { Role } from '../../common/types';
 import { Client } from 'cassandra-driver';
 import { CASSANDRA_CLIENT } from '../../common/modules';
 import {
+  getHistoricalData,
   getHistoricalDataById,
   HistoricalData,
   insertHistoricPowerPlantData,
@@ -164,6 +165,21 @@ export class PowerPlantsService {
       powerPlantId,
       data,
     );
+  }
+
+  async history(
+    userId: string,
+    powerPlantIds: string[],
+    dateFrom?: Date,
+    dateTo?: Date,
+  ) {
+    const history = await getHistoricalData(
+      this.cassandraClient,
+      powerPlantIds,
+      dateFrom ?? new Date(0),
+      dateTo ?? new Date(),
+    );
+    return history;
   }
 
   async calibrate(
