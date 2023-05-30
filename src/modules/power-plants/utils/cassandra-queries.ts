@@ -42,6 +42,51 @@ export const getHistoricalDataById = async (
     });
 };
 
+export const getHistoricalData = async (
+  client: Client,
+  powerPlantIds: string[],
+  dateFrom: Date,
+  dateTo: Date,
+): Promise<HistoricalData[]> => {
+  const result = await client.execute(
+    `
+      SELECT * 
+      FROM power_plants 
+      WHERE 
+        power_plant_id IN (${powerPlantIds.map((x) => '?').join(', ')}) 
+      AND
+        timestamp >= ?
+      AND
+        timestamp <= ?
+    `,
+    [...powerPlantIds, dateFrom.getTime() / 1000, dateTo.getTime() / 1000],
+    { prepare: true },
+  );
+
+  const rows = [];
+  for await (const row of result) {
+    rows.push(row);
+  }
+
+  if (rows.length === 0) {
+    return [];
+  }
+
+  return rows
+    .map((row) => ({
+      powerPlantId: row.get('power_plant_id'),
+      power: Number(row.get('power')),
+      solar: Number(row.get('solar')),
+      predictedPower: Number(row.get('predicted_power')),
+      timestamp: row.get('timestamp'),
+    }))
+    .sort(
+      (a, b) =>
+        a.powerPlantId.localeCompare(b.powerPlantId) ||
+        +a.timestamp - +b.timestamp,
+    );
+};
+
 export const insertHistoricPowerPlantData = async (
   client: Client,
   data: HistoricalData[],
