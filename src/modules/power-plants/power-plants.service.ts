@@ -222,14 +222,14 @@ export class PowerPlantsService {
   async history(
     userId: string,
     powerPlantIds: string[],
-    dateFrom?: Date,
-    dateTo?: Date,
+    dateFrom?: string,
+    dateTo?: string,
   ) {
     const history = await getHistoricalData(
       this.cassandraClient,
-      powerPlantIds,
-      dateFrom ?? new Date(0),
-      dateTo ?? new Date(),
+      [powerPlantIds].flat(),
+      dateFrom ? new Date(dateFrom) : new Date(0),
+      dateTo ? new Date(dateTo) : new Date(),
     );
     return history;
   }

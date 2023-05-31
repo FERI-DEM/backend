@@ -33,8 +33,8 @@ export class PowerPlantsController {
   async history(
     @User('id') userId: string,
     @Query('powerPlantIds') powerPlantIds: string[],
-    @Query('dateFrom') dateFrom?: Date,
-    @Query('dateTo') dateTo?: Date,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ) {
     return await this.powerPlantService.history(
       userId,
