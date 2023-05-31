@@ -59,7 +59,7 @@ export const getHistoricalData = async (
       AND
         timestamp <= ?
     `,
-    [...powerPlantIds, dateFrom.getTime() / 1000, dateTo.getTime() / 1000],
+    [...powerPlantIds, dateFrom.getTime(), dateTo.getTime()],
     { prepare: true },
   );
 
@@ -78,7 +78,7 @@ export const getHistoricalData = async (
       power: Number(row.get('power')),
       solar: Number(row.get('solar')),
       predictedPower: Number(row.get('predicted_power')),
-      timestamp: +row.get('timestamp') * 1000,
+      timestamp: +row.get('timestamp'),
     }))
     .sort(
       (a, b) =>
