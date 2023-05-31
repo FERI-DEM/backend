@@ -9,3 +9,11 @@ export type CreatePowerPlantWithCalibration = {
   longitude: number;
   calibration: Calibration[];
 };
+
+export enum Statistics {
+  today = 'today',
+  tomorrow = 'tomorrow',
+  week = 'week',
+  month = 'month',
+  year = 'year',
+}

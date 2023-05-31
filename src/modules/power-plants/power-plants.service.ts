@@ -24,6 +24,8 @@ import {
 } from './utils/cassandra-queries';
 import { FirebaseService } from '../../common/services';
 import { OpenMeteoAPI } from '../forecasts/strategies/open-meteo.strategy';
+import { Statistics } from './types';
+import { getRangeForBefore, getRangeForNow } from './utils/statistics';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -71,6 +73,54 @@ export class PowerPlantsService {
       }
     }
     await insertHistoricPowerPlantData(this.cassandraClient, arr);
+  }
+
+  async getProductionStatistics(
+    powerPlantId: string,
+    type: Statistics | Statistics[],
+  ) {
+    const getStatistics = async (type: Statistics) => {
+      const graterThanTimestamp = getRangeForNow(type);
+
+      const historicalData = await getHistoricalDataById(
+        this.cassandraClient,
+        powerPlantId,
+        graterThanTimestamp,
+        Date.now(),
+      );
+
+      // power production for this timestamp on
+      let now = 0;
+      for (let i = 0; i < historicalData.length; i++) {
+        now += historicalData[i].power;
+      }
+
+      //
+      const lowerThanTimestamp = getRangeForBefore(type);
+      const historicalDataBefore = await getHistoricalDataById(
+        this.cassandraClient,
+        powerPlantId,
+        lowerThanTimestamp,
+        graterThanTimestamp,
+      );
+
+      let before = 0;
+      for (let i = 0; i < historicalDataBefore.length; i++) {
+        before += historicalDataBefore[i].power;
+      }
+
+      return {
+        now,
+        before,
+        type,
+      };
+    };
+
+    if (typeof type === 'string') {
+      return getStatistics(type);
+    } else {
+      return Promise.all(type.map((t) => getStatistics(t)));
+    }
   }
 
   async create(userId: string, uid: string, data: CreatePowerPlantDto) {
@@ -143,12 +193,14 @@ export class PowerPlantsService {
       throw new NotFoundException('Power plant not found');
     }
 
-    const history = await getHistoricalDataById(
-      this.cassandraClient,
-      powerPlantId,
-    );
-
-    return { ...powerPlant.toObject(), history };
+    // TODO
+    // const history = await getHistoricalDataById(
+    //   this.cassandraClient,
+    //   powerPlantId,
+    // );
+    //
+    // return { ...powerPlant.toObject(), history };
+    return powerPlant;
   }
 
   async findByUser(userId: string) {

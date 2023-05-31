@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { PowerPlantsService } from './power-plants.service';
 import {
   CreateCalibrationDto,
@@ -19,6 +19,7 @@ import {
 import { AuthGuard, RoleGuard } from '../auth/guards';
 import { Roles, User } from '../../common/decorators';
 import { Role } from '../../common/types';
+import { Statistics } from './types';
 
 @ApiTags('power-plants')
 @ApiBearerAuth()
@@ -40,6 +41,19 @@ export class PowerPlantsController {
       powerPlantIds,
       dateFrom,
       dateTo,
+    );
+  }
+
+  @Roles(Role.POWER_PLANT_OWNER)
+  @Get('production-statistics/:id')
+  async statistics(
+    @User('id') userId: string,
+    @Param('id') powerPlantId: string,
+    @Query('type') type: Statistics[] | Statistics,
+  ) {
+    return await this.powerPlantService.getProductionStatistics(
+      powerPlantId,
+      type,
     );
   }
 

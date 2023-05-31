@@ -1,7 +1,5 @@
 import { Client } from 'cassandra-driver';
 
-// TODO: when writing to cassandra?
-// Timestamp unix
 export interface HistoricalData {
   powerPlantId: string;
   power: number;
@@ -13,10 +11,18 @@ export interface HistoricalData {
 export const getHistoricalDataById = async (
   client: Client,
   powerPlantId: string,
+  greaterThanTimestamp: number,
+  lowerThanTimestamp: number,
 ): Promise<HistoricalData[]> => {
   const { rows, rowLength } = await client.execute(
-    'SELECT * FROM power_plants WHERE power_plant_id = ? LIMIT 30 ALLOW FILTERING ',
+    `SELECT *
+     FROM power_plants
+     WHERE power_plant_id = ?
+            AND timestamp >= ${greaterThanTimestamp}
+           // AND timestamp <= ${lowerThanTimestamp}
+         ALLOW FILTERING;`,
     [powerPlantId],
+    { prepare: true, autoPage: true },
   );
 
   if (rowLength === 0) {
@@ -29,7 +35,7 @@ export const getHistoricalDataById = async (
       power: Number(row.get('power')),
       solar: Number(row.get('solar')),
       predictedPower: Number(row.get('predicted_power')),
-      timestamp: row.get('timestamp'),
+      timestamp: Number(row.get('timestamp')),
     }))
     .sort((a, b) => {
       if (a.timestamp < b.timestamp) {
@@ -50,14 +56,11 @@ export const getHistoricalData = async (
 ): Promise<HistoricalData[]> => {
   const result = await client.execute(
     `
-      SELECT * 
-      FROM power_plants 
-      WHERE 
-        power_plant_id IN (${powerPlantIds.map((x) => '?').join(', ')}) 
-      AND
-        timestamp >= ?
-      AND
-        timestamp <= ?
+        SELECT *
+        FROM power_plants
+        WHERE power_plant_id IN (${powerPlantIds.map((x) => '?').join(', ')})
+          AND timestamp >= ?
+          AND timestamp <= ?
     `,
     [...powerPlantIds, dateFrom.getTime() / 1000, dateTo.getTime() / 1000],
     { prepare: true },
