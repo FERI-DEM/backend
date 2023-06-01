@@ -16,15 +16,16 @@ export const getHistoricalDataById = async (
 ): Promise<HistoricalData[]> => {
   const { rows, rowLength } = await client.execute(
     `SELECT *
-     FROM power_plants
-     WHERE power_plant_id = ?
-            AND timestamp >= ${greaterThanTimestamp}
-           // AND timestamp <= ${lowerThanTimestamp}
-         ALLOW FILTERING;`,
-    [powerPlantId],
-    { prepare: true, autoPage: true },
+       FROM power_plants
+       WHERE power_plant_id = ?
+         AND timestamp >= ?
+         AND timestamp <= ?
+           ALLOW FILTERING;`,
+    [powerPlantId, greaterThanTimestamp, lowerThanTimestamp],
+    {
+      prepare: true,
+    },
   );
-
   if (rowLength === 0) {
     return [];
   }

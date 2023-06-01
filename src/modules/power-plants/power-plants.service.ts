@@ -92,7 +92,7 @@ export class PowerPlantsService {
       // power production for this timestamp on
       let now = 0;
       for (let i = 0; i < historicalData.length; i++) {
-        now += historicalData[i].power;
+        now += historicalData[i].predictedPower;
       }
 
       //
@@ -106,7 +106,7 @@ export class PowerPlantsService {
 
       let before = 0;
       for (let i = 0; i < historicalDataBefore.length; i++) {
-        before += historicalDataBefore[i].power;
+        before += historicalDataBefore[i].predictedPower;
       }
 
       return {
