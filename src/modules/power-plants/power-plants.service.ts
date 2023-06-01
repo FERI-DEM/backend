@@ -96,11 +96,11 @@ export class PowerPlantsService {
       }
 
       //
-      const lowerThanTimestamp = getRangeForBefore(type);
+      const beforeDate = getRangeForBefore(type);
       const historicalDataBefore = await getHistoricalDataById(
         this.cassandraClient,
         powerPlantId,
-        lowerThanTimestamp,
+        beforeDate,
         graterThanTimestamp,
       );
 
