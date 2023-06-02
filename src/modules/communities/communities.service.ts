@@ -320,7 +320,7 @@ export class CommunitiesService {
 
   async processRequest(data: ProcessRequestDto & { adminId: string }) {
     const { userId: adminFirebaseId } = await this.usersService.findById(
-      community.adminId,
+      data.adminId,
     );
 
     const notification = await this.notificationService.process<{
