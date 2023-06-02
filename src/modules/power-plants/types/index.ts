@@ -12,7 +12,6 @@ export type CreatePowerPlantWithCalibration = {
 
 export enum Statistics {
   today = 'today',
-  tomorrow = 'tomorrow',
   week = 'week',
   month = 'month',
   year = 'year',
