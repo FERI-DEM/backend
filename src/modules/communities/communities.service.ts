@@ -10,11 +10,12 @@ import { UsersService } from '../users/users.service';
 import { NotificationType, Role } from '../../common/types';
 import { CommunityRepository } from './repository/community.repository';
 import { CommunityDocument } from './schemas/community.schema';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { Community } from './types/community.types';
 import { PowerPlantsService } from '../power-plants/power-plants.service';
 import { NotificationsService } from '../../common/services';
 import { ProcessRequestDto } from './dto/process-request.dto';
+import { Statistics } from '../power-plants/types';
 
 @Injectable()
 export class CommunitiesService {
@@ -49,6 +50,37 @@ export class CommunitiesService {
     });
 
     return !!community;
+  }
+
+  async productionStatistics(communityId: string, type: Statistics) {
+    const community = await this.communityRepository.findOne({
+      _id: communityId,
+    });
+
+    const powerPlants = community.members.map(({ powerPlantId }) => ({
+      powerPlantId,
+    }));
+
+    const result = await Promise.all(
+      powerPlants.map(
+        ({ powerPlantId }) =>
+          this.powerPlantsService.getProductionStatistics(
+            powerPlantId.toString(),
+            type,
+          ) as Promise<{ now: number; before: number; type: Statistics }>,
+      ),
+    );
+
+    let now = 0;
+    for (let i = 0; i < result.length; i++) {
+      now += result[i].now;
+    }
+
+    let before = 0;
+    for (let i = 0; i < result.length; i++) {
+      before += result[i].before;
+    }
+    return { now, before, type };
   }
 
   async findByUser(userId: string): Promise<CommunityDocument[]> {

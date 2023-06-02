@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -15,6 +16,7 @@ import { Roles, User } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../auth/guards';
 import { Role } from '../../common/types';
 import { ProcessRequestDto } from './dto/process-request.dto';
+import { Statistics } from '../power-plants/types';
 
 @ApiTags('communities')
 @ApiBearerAuth()
@@ -22,6 +24,15 @@ import { ProcessRequestDto } from './dto/process-request.dto';
 @Controller('communities')
 export class CommunitiesController {
   constructor(private readonly communitiesService: CommunitiesService) {}
+
+  @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
+  @Get('statistics/:id')
+  async getStatistics(
+    @Param('id') id: string,
+    @Query('type') type: Statistics,
+  ) {
+    return await this.communitiesService.productionStatistics(id, type);
+  }
 
   @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
   @Get()
