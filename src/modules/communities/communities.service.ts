@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateCommunityDto, RequestToJoinDto } from './dto';
 import { UsersService } from '../users/users.service';
-import { NotificationType, Role } from '../../common/types';
+import { NotificationType, RequestUser, Role } from '../../common/types';
 import { CommunityRepository } from './repository/community.repository';
 import { CommunityDocument } from './schemas/community.schema';
 import mongoose, { Types } from 'mongoose';
@@ -272,7 +272,9 @@ export class CommunitiesService {
     return true;
   }
 
-  async requestToJoin(data: RequestToJoinDto & { userId: string }) {
+  async requestToJoin(data: RequestToJoinDto & { user: RequestUser }) {
+    const { id: userId, userId: userFirebaseId } = data.user;
+
     const community = await this.communityRepository.findOne({
       _id: data.communityId,
     });
@@ -281,9 +283,7 @@ export class CommunitiesService {
       throw new NotFoundException('Community not found');
     }
 
-    const { powerPlants } = await this.powerPlantsService.findByUser(
-      data.userId,
-    );
+    const { powerPlants } = await this.powerPlantsService.findByUser(userId);
 
     // check if user owns power plants
     const isOwnerOfPowerPlants = data.powerPlants.every((powerPlant) =>
@@ -297,15 +297,19 @@ export class CommunitiesService {
       );
     }
 
-    const user = await this.usersService.findById(data.userId);
+    const user = await this.usersService.findById(userId);
+
+    const { userId: adminFirebaseId } = await this.usersService.findById(
+      community.adminId,
+    );
 
     await this.notificationService.send({
       type: NotificationType.REQUEST_TO_JOIN,
-      receiverId: community.adminId,
-      senderId: data.userId,
+      receiverId: adminFirebaseId,
+      senderId: userFirebaseId,
       data: {
         communityId: data.communityId,
-        userId: data.userId,
+        userId: userFirebaseId,
         powerPlants: data.powerPlants,
         message: `User with email ${user.email} wants to join your ${community.name} community with ${data.powerPlants.length} power plants`,
       },
@@ -315,11 +319,15 @@ export class CommunitiesService {
   }
 
   async processRequest(data: ProcessRequestDto & { adminId: string }) {
+    const { userId: adminFirebaseId } = await this.usersService.findById(
+      community.adminId,
+    );
+
     const notification = await this.notificationService.process<{
       communityId: string;
       userId: string;
       powerPlants: string[];
-    }>(data.notificationId, data.adminId);
+    }>(data.notificationId, adminFirebaseId);
 
     if (!data.accepted) return { status: 'ok', message: 'Request rejected' };
 

@@ -14,7 +14,7 @@ import { AddMemberDto, CreateCommunityDto, RequestToJoinDto } from './dto';
 import { CommunitiesService } from './communities.service';
 import { Roles, User } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../auth/guards';
-import { Role } from '../../common/types';
+import { RequestUser, Role } from '../../common/types';
 import { ProcessRequestDto } from './dto/process-request.dto';
 import { Statistics } from '../power-plants/types';
 
@@ -96,10 +96,10 @@ export class CommunitiesController {
 
   @Post('request-to-join')
   async requestToJoin(
-    @User('id') userId: string,
+    @User() user: RequestUser,
     @Body() dto: RequestToJoinDto,
   ) {
-    return await this.communitiesService.requestToJoin({ ...dto, userId });
+    return await this.communitiesService.requestToJoin({ ...dto, user });
   }
 
   @Roles(Role.COMMUNITY_ADMIN)
