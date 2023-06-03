@@ -51,13 +51,13 @@ export const formatDateTo15minInterval = (date: Date): string => {
   if (minutes < 30) {
     roundedMinutes = 15;
   }
-  if (minutes < 30) {
+  if (minutes < 45) {
     roundedMinutes = 30;
   }
-  if (minutes < 45) {
+  if (minutes < 59) {
     roundedMinutes = 45;
   }
-  if (minutes >= 45) {
+  if (minutes >= 59) {
     roundedMinutes = 0;
     date.setHours(date.getHours() + 1);
   }
