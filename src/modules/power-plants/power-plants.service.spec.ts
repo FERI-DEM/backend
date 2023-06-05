@@ -37,6 +37,8 @@ describe('power-plants service test', () => {
     displayName: faker.name.firstName(),
     latitude: 30,
     longitude: 30,
+    maxPower: 100,
+    size: 100,
   };
 
   beforeAll(async () => {
