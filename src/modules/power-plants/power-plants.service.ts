@@ -163,7 +163,7 @@ export class PowerPlantsService {
       await this.userService.addRole(userId, Role.POWER_PLANT_OWNER);
     }
 
-    this.firebase.auth.setCustomUserClaims(uid, {
+    await this.firebase.auth.setCustomUserClaims(uid, {
       valid: true,
     });
     return newPowerPlant;
