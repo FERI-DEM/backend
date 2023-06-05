@@ -141,13 +141,8 @@ export class PowerPlantsService {
   }
 
   async create(userId: string, uid: string, data: CreatePowerPlantDto) {
-    const calibrationValue = data.maxPower / (0.2 * data.size);
-
     const result = await this.powerPlantRepository.createPowerPlant(userId, {
       ...data,
-      calibration: [
-        { date: new Date().toISOString(), value: calibrationValue },
-      ],
     });
     const newPowerPlant = result.powerPlants.find(
       (powerPlant) => powerPlant.displayName === data.displayName,

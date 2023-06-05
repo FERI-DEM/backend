@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from '../../users/schemas/user.schema';
 import { CreatePowerPlantDto, UpdatePowerPlantDto } from '../dto';
 import { Model } from 'mongoose';
-import { Calibration, CreatePowerPlantWithCalibration } from '../types';
+import { Calibration } from '../types';
 
 @Injectable()
 export class PowerPlantRepository {
@@ -11,7 +11,7 @@ export class PowerPlantRepository {
 
   async createPowerPlant(
     userId: string,
-    data: CreatePowerPlantWithCalibration,
+    data: CreatePowerPlantDto,
   ) {
     return this.model.findOneAndUpdate(
       { _id: userId },
