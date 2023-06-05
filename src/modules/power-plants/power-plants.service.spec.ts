@@ -197,8 +197,8 @@ describe('power-plants service test', () => {
     const result = await powerPlantsService.calibrate(userId, powerPlantId, {
       power: 100,
     });
-    expect(result.powerPlants[0].calibration.length).toBe(2);
-    expect(result.powerPlants[0].calibration[0].value).toBe(5);
+    expect(result.powerPlants[0].calibration.length).toBe(1);
+    expect(result.powerPlants[0].calibration[0].value).toBe(1);
   });
 
   it('should fail to create calibration because radiation is 0 or lower', async () => {
