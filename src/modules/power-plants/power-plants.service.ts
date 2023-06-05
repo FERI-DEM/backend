@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PowerPlantRepository } from './repository/power-plant.repository';
@@ -26,6 +27,8 @@ import { FirebaseService } from '../../common/services';
 import { OpenMeteoAPI } from '../forecasts/strategies/open-meteo.strategy';
 import { Statistics } from './types';
 import { getRangeForBefore, getRangeForNow } from './utils/statistics';
+import settings from '../../app.settings';
+import { Env } from '../../common/constants/env.constants';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -63,16 +66,30 @@ export class PowerPlantsService {
             (p) => p.date === weather.timestamp,
           )?.power;
         }
-        arr.push({
-          powerPlantId: _id.toString(),
-          solar: weather.solar,
-          power: 0,
-          predictedPower: predictedPower,
-          timestamp: new Date(weather.timestamp).getTime(),
-        });
+
+        // check if in array is powerPlantId and timestamp already
+        const index = arr.findIndex(
+          (a) =>
+            a.powerPlantId === _id.toString() &&
+            a.timestamp === new Date(weather.timestamp).getTime(),
+        );
+
+        if (index !== -1) {
+          arr.push({
+            powerPlantId: _id.toString(),
+            solar: weather.solar,
+            power: 0,
+            predictedPower: predictedPower,
+            timestamp: new Date(weather.timestamp).getTime(),
+          });
+        }
       }
     }
-    await insertHistoricPowerPlantData(this.cassandraClient, arr);
+    if (settings.environment === Env.PRODUCTION) {
+      await insertHistoricPowerPlantData(this.cassandraClient, arr);
+    } else {
+      Logger.log(arr, 'Historical data');
+    }
   }
 
   async getProductionStatistics(
