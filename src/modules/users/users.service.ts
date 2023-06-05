@@ -20,6 +20,14 @@ export class UsersService {
     return user;
   }
 
+  async findByFirebaseId(firebaseId: string): Promise<UserDocument> {
+    const user = await this.userRepository.findOne({ userId: firebaseId });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   async create(data: CreateUserDto): Promise<UserDocument> {
     return await this.userRepository.create(data);
   }

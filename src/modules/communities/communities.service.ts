@@ -331,11 +331,15 @@ export class CommunitiesService {
 
     if (!data.accepted) return { status: 'ok', message: 'Request rejected' };
 
+    const { id: memberId } = await this.usersService.findByFirebaseId(
+      notification.data.userId,
+    );
+
     await this.addPowerPlants(
       notification.data.powerPlants,
       notification.data.communityId,
       data.adminId,
-      notification.data.userId,
+      memberId,
     );
   }
 
