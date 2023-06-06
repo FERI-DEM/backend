@@ -38,8 +38,6 @@ describe('power-plants service test', () => {
     displayName: faker.name.firstName(),
     latitude: 30,
     longitude: 30,
-    maxPower: 100,
-    size: 100,
   };
 
   beforeAll(async () => {
@@ -105,8 +103,6 @@ describe('power-plants service test', () => {
     expect(rolesBefore[0]).toBe(Role.BASIC_USER);
     expect(rolesAfter[1]).toBe(Role.POWER_PLANT_OWNER);
     expect(result.displayName).toBe(powerPlantData.displayName);
-    expect(result.maxPower).toBe(powerPlantData.maxPower);
-    expect(result.size).toBe(powerPlantData.size);
   });
 
   it('should delete power plant', async () => {
