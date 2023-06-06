@@ -8,5 +8,9 @@ export interface Community {
     powerPlantName: string;
     userName: string;
     isAdmin: boolean;
-  };
+    calibration: {
+      date: string;
+      value: number;
+    };
+  }[];
 }

@@ -103,6 +103,25 @@ export class CommunitiesService {
     return communityResult[0];
   }
 
+  async getMembersPowerShare(
+    id: string,
+  ): Promise<{ user: string; share: number }[]> {
+    const communityResult = await this.communityRepository.findByIdWithLookup(
+      id,
+    );
+    if (!communityResult && communityResult.length === 0) {
+      throw new NotFoundException('Community not found');
+    }
+    const community = communityResult[0];
+    const sum = community.members.reduce((partialSum, member) => {
+      return partialSum + member.calibration.value;
+    }, 0);
+    return community.members.map((member) => ({
+      user: member.userName,
+      share: member.calibration.value / sum,
+    }));
+  }
+
   async create(
     data: CreateCommunityDto & { adminId: string },
   ): Promise<CommunityDocument> {

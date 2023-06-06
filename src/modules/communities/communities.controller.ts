@@ -45,6 +45,11 @@ export class CommunitiesController {
   async findById(@Param('id') id: string) {
     return await this.communitiesService.findById(id);
   }
+  @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
+  @Get(':id/members-power-share')
+  async getMembersPowerShare(@Param('id') id: string) {
+    return await this.communitiesService.getMembersPowerShare(id);
+  }
 
   @Roles(Role.POWER_PLANT_OWNER)
   @Post()
