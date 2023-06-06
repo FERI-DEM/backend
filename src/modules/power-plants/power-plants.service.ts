@@ -195,26 +195,6 @@ export class PowerPlantsService {
     return powerPlant;
   }
 
-  async findPowerPlantWithHistoricData(userId: string, powerPlantId: string) {
-    const powerPlant = await this.powerPlantRepository.findPowerPlantById(
-      userId,
-      powerPlantId,
-    );
-
-    if (!powerPlant) {
-      throw new NotFoundException('Power plant not found');
-    }
-
-    // TODO
-    // const history = await getHistoricalDataById(
-    //   this.cassandraClient,
-    //   powerPlantId,
-    // );
-    //
-    // return { ...powerPlant.toObject(), history };
-    return powerPlant;
-  }
-
   async findByUser(userId: string) {
     return await this.powerPlantRepository.findPowerPlantByUserId(userId);
   }
@@ -338,22 +318,6 @@ export class PowerPlantsService {
     }
 
     // TODO: last calibration or average
-    // const { power, radiation } = calibration[calibration.length - 1];
-    //
-    // if (radiation <= 0) {
-    //   throw new HttpException(
-    //     'Radiation can not be 0 or lower',
-    //     HttpStatus.PRECONDITION_FAILED,
-    //   );
-    // }
-    //
-    // if (power <= 0) {
-    //   throw new HttpException(
-    //     'Power can not be 0 or lower',
-    //     HttpStatus.PRECONDITION_FAILED,
-    //   );
-    // }
-
     const coefficient = calibration[calibration.length - 1].value;
 
     if (coefficient <= 0) {
