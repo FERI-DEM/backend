@@ -8,7 +8,10 @@ import { UserRepository } from '../users/repositories/user.repository';
 import { UsersService } from '../users/users.service';
 import { faker } from '@faker-js/faker';
 import { AuthModule } from '../auth/auth.module';
-import { Role } from '../../common/types';
+import { Notification, NotificationType, Role } from '../../common/types';
+import { CreatePowerPlantDto } from '../power-plants/dto';
+import { PowerPlantsService } from '../power-plants/power-plants.service';
+import { FirebaseService, NotificationsService } from '../../common/services';
 
 describe('CommunitiesService test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -16,11 +19,24 @@ describe('CommunitiesService test', () => {
     communitiesRepository: CommunityRepository,
     userRepository: UserRepository,
     userService: UsersService,
+    powerPlantsService: PowerPlantsService,
+    notificationService: NotificationsService,
     app: TestingModule,
     adminId: string,
     userId: string,
     memberId: string,
     memberEmail: string;
+
+  const memberFirebaseId = 'test1';
+  const adminFirebaseId = 'test2';
+
+  const powerPlantData: CreatePowerPlantDto = {
+    displayName: faker.name.firstName(),
+    latitude: 30,
+    longitude: 30,
+    maxPower: 100,
+    size: 100,
+  };
 
   beforeAll(async () => {
     moduleRef = Test.createTestingModule({
@@ -35,13 +51,23 @@ describe('CommunitiesService test', () => {
     communitiesRepository = app.get(CommunityRepository);
     userRepository = app.get(UserRepository);
     userService = app.get(UsersService);
+    powerPlantsService = app.get(PowerPlantsService);
+    notificationService = app.get(NotificationsService);
+    const firebaseService = app.get(FirebaseService);
+
+    jest
+      .spyOn(notificationService, 'send')
+      .mockImplementation(async () => true);
+    jest
+      .spyOn(firebaseService.auth, 'setCustomUserClaims')
+      .mockImplementation(() => Promise.resolve());
   });
 
   beforeEach(async () => {
     adminId = (
       await userService.create({
         email: faker.internet.email(),
-        userId: faker.datatype.uuid(),
+        userId: adminFirebaseId,
         roles: [Role.COMMUNITY_ADMIN, Role.POWER_PLANT_OWNER],
       })
     ).id;
@@ -54,7 +80,7 @@ describe('CommunitiesService test', () => {
     ).id;
     const member = await userService.create({
       email: faker.internet.email(),
-      userId: faker.datatype.uuid(),
+      userId: memberFirebaseId,
       roles: [Role.COMMUNITY_MEMBER, Role.POWER_PLANT_OWNER],
     });
     memberId = member.id;
@@ -80,6 +106,8 @@ describe('CommunitiesService test', () => {
     expect(communitiesRepository).toBeDefined();
     expect(userRepository).toBeDefined();
     expect(userService).toBeDefined();
+    expect(powerPlantsService).toBeDefined();
+    expect(notificationService).toBeDefined();
   });
 
   it("should return true if member is in admins' community", async () => {
@@ -274,7 +302,7 @@ describe('CommunitiesService test', () => {
       expect(e.message).toBe('You are not member of this community');
     }
   });
-  it('shloud not allow addmin to leave community', async () => {
+  it('should not allow admin to leave community', async () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
@@ -341,5 +369,228 @@ describe('CommunitiesService test', () => {
     const foundCommunity = await communitiesService.findByUser(memberId);
     expect(foundCommunity.length).toEqual(0);
     expect(foundCommunity).toEqual([]);
+  });
+  it('should  allow user to send a request to join community', async () => {
+    const community = await communitiesRepository.create({
+      name: 'test',
+      adminId,
+      membersIds: [adminId],
+    });
+
+    const reqUser = {
+      id: memberId,
+      email: memberEmail,
+      userId: 'test',
+      roles: [Role.POWER_PLANT_OWNER],
+    };
+
+    const powerPlant = await powerPlantsService.create(
+      memberId,
+      'test',
+      powerPlantData,
+    );
+
+    const powerPlantId = powerPlant._id.toString();
+
+    const res = await communitiesService.requestToJoin({
+      user: reqUser,
+      communityId: community.id,
+      powerPlants: [powerPlantId],
+    });
+    expect(res.status).toEqual('ok');
+  });
+  it('should not allow user to send a request to join community', async () => {
+    const community = await communitiesRepository.create({
+      name: 'test',
+      adminId,
+      membersIds: [adminId],
+    });
+
+    const reqUser = {
+      id: userId,
+      email: memberEmail,
+      userId: 'test',
+      roles: [Role.POWER_PLANT_OWNER],
+    };
+
+    const powerPlant = await powerPlantsService.create(
+      memberId,
+      'test',
+      powerPlantData,
+    );
+
+    const powerPlantId = powerPlant._id.toString();
+
+    let errorMsg = '';
+    try {
+      await communitiesService.requestToJoin({
+        user: reqUser,
+        communityId: community.id,
+        powerPlants: [powerPlantId],
+      });
+    } catch (e) {
+      errorMsg = e.message;
+    }
+    expect(errorMsg).toBe(
+      'You do not own all power plants that you want to join the community with',
+    );
+  });
+  it('should decline request to join community', async () => {
+    jest
+      .spyOn(notificationService, 'process')
+      .mockImplementationOnce(async () => {
+        return {
+          id: 'test',
+          receiverId: adminFirebaseId,
+          senderId: memberFirebaseId,
+          type: NotificationType.REQUEST_TO_JOIN,
+          data: 'test',
+          processed: true,
+          createdAt: new Date(),
+        } as unknown as Notification<string>;
+      });
+
+    const res = await communitiesService.processRequest({
+      notificationId: 'test',
+      accepted: false,
+      adminId: adminId,
+    });
+
+    expect(res.status).toEqual('ok');
+    expect(res.message).toEqual('Request rejected');
+  });
+  it('should add power plant to the community', async () => {
+    const community = await communitiesRepository.create({
+      name: 'test',
+      adminId,
+      membersIds: [adminId],
+    });
+
+    const newUserFirebaseId = 'test3';
+    const newUserId = (
+      await userService.create({
+        email: faker.internet.email(),
+        userId: newUserFirebaseId,
+        roles: [Role.POWER_PLANT_OWNER],
+      })
+    ).id;
+
+    const powerPlant = await powerPlantsService.create(
+      newUserId,
+      newUserFirebaseId,
+      powerPlantData,
+    );
+
+    jest
+      .spyOn(notificationService, 'process')
+      .mockImplementationOnce(async () => {
+        return {
+          id: 'test',
+          receiverId: adminFirebaseId,
+          senderId: newUserFirebaseId,
+          type: NotificationType.REQUEST_TO_JOIN,
+          data: {
+            communityId: community.id,
+            userId: newUserFirebaseId,
+            powerPlants: [powerPlant._id.toString()],
+          },
+          processed: true,
+          createdAt: new Date(),
+        } as unknown as Notification<{
+          communityId: string;
+          userId: string;
+          powerPlants: string[];
+        }>;
+      });
+
+    const user = await userRepository.findById(newUserId);
+
+    const res = await communitiesService.processRequest({
+      notificationId: 'test',
+      accepted: true,
+      adminId: adminId,
+    });
+
+    const updatedCommunity = await communitiesRepository.findById(community.id);
+    const isPowerPlantInCommunity = updatedCommunity.powerPlantIds.includes(
+      powerPlant._id.toString(),
+    );
+
+    const updatedUser = await userRepository.findById(newUserId);
+
+    expect(user.roles.includes(Role.COMMUNITY_MEMBER)).toBeFalsy();
+    expect(updatedUser.roles.includes(Role.COMMUNITY_MEMBER)).toBeTruthy();
+    expect(res.status).toEqual('ok');
+    expect(res.message).toEqual('Request accepted');
+    expect(isPowerPlantInCommunity).toBeTruthy();
+  });
+  it('should remove power plant to the community', async () => {
+    const newUserFirebaseId = 'test3';
+    const newUserId = (
+      await userService.create({
+        email: faker.internet.email(),
+        userId: newUserFirebaseId,
+        roles: [Role.POWER_PLANT_OWNER],
+      })
+    ).id;
+
+    const community = await communitiesRepository.create({
+      name: 'test',
+      adminId,
+      membersIds: [adminId, newUserId],
+    });
+
+    const powerPlant = await powerPlantsService.create(
+      newUserId,
+      newUserFirebaseId,
+      powerPlantData,
+    );
+
+    jest
+      .spyOn(notificationService, 'process')
+      .mockImplementationOnce(async () => {
+        return {
+          id: 'test',
+          receiverId: adminFirebaseId,
+          senderId: newUserFirebaseId,
+          type: NotificationType.REQUEST_TO_JOIN,
+          data: {
+            communityId: community.id,
+            userId: newUserFirebaseId,
+            powerPlants: [powerPlant._id.toString()],
+          },
+          processed: true,
+          createdAt: new Date(),
+        } as unknown as Notification<{
+          communityId: string;
+          userId: string;
+          powerPlants: string[];
+        }>;
+      });
+
+    await communitiesService.processRequest({
+      notificationId: 'test',
+      accepted: true,
+      adminId: adminId,
+    });
+    const user = await userRepository.findById(newUserId);
+
+    await communitiesService.removePowerPlants(
+      [powerPlant._id.toString()],
+      newUserId,
+      community.id,
+      adminId,
+    );
+
+    const updatedCommunity = await communitiesRepository.findById(community.id);
+    const isPowerPlantInCommunity = updatedCommunity.powerPlantIds.includes(
+      powerPlant._id.toString(),
+    );
+
+    const updatedUser = await userRepository.findById(newUserId);
+
+    expect(user.roles.includes(Role.COMMUNITY_MEMBER)).toBeTruthy();
+    expect(updatedUser.roles.includes(Role.COMMUNITY_MEMBER)).toBeFalsy();
+    expect(isPowerPlantInCommunity).toBeFalsy();
   });
 });

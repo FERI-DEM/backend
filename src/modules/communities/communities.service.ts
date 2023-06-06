@@ -10,7 +10,7 @@ import { UsersService } from '../users/users.service';
 import { NotificationType, RequestUser, Role } from '../../common/types';
 import { CommunityRepository } from './repository/community.repository';
 import { CommunityDocument } from './schemas/community.schema';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import { Community } from './types/community.types';
 import { PowerPlantsService } from '../power-plants/power-plants.service';
 import { NotificationsService } from '../../common/services';
@@ -341,6 +341,8 @@ export class CommunitiesService {
       data.adminId,
       memberId,
     );
+
+    return { status: 'ok', message: 'Request accepted' };
   }
 
   async addPowerPlants(
