@@ -74,7 +74,7 @@ export class PowerPlantsService {
             a.timestamp === new Date(weather.timestamp).getTime(),
         );
 
-        if (index === -1) {
+        if (index > -1) {
           arr.push({
             powerPlantId: _id.toString(),
             solar: weather.solar,
