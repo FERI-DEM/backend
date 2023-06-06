@@ -534,63 +534,32 @@ describe('CommunitiesService test', () => {
       })
     ).id;
 
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [adminId, newUserId],
-    });
-
     const powerPlant = await powerPlantsService.create(
       newUserId,
       newUserFirebaseId,
       powerPlantData,
     );
 
-    jest
-      .spyOn(notificationService, 'process')
-      .mockImplementationOnce(async () => {
-        return {
-          id: 'test',
-          receiverId: adminFirebaseId,
-          senderId: newUserFirebaseId,
-          type: NotificationType.REQUEST_TO_JOIN,
-          data: {
-            communityId: community.id,
-            userId: newUserFirebaseId,
-            powerPlants: [powerPlant._id.toString()],
-          },
-          processed: true,
-          createdAt: new Date(),
-        } as unknown as Notification<{
-          communityId: string;
-          userId: string;
-          powerPlants: string[];
-        }>;
-      });
-
-    await communitiesService.processRequest({
-      notificationId: 'test',
-      accepted: true,
-      adminId: adminId,
+    const community = await communitiesRepository.create({
+      name: 'test',
+      adminId,
+      membersIds: [adminId, newUserId],
+      powerPlantIds: [powerPlant._id.toString()],
     });
-    const user = await userRepository.findById(newUserId);
 
-    await communitiesService.removePowerPlants(
+    const res = await communitiesService.removePowerPlants(
       [powerPlant._id.toString()],
       newUserId,
       community.id,
       adminId,
     );
 
+    expect(res).toBeTruthy();
+
     const updatedCommunity = await communitiesRepository.findById(community.id);
     const isPowerPlantInCommunity = updatedCommunity.powerPlantIds.includes(
       powerPlant._id.toString(),
     );
-
-    const updatedUser = await userRepository.findById(newUserId);
-
-    expect(user.roles.includes(Role.COMMUNITY_MEMBER)).toBeTruthy();
-    expect(updatedUser.roles.includes(Role.COMMUNITY_MEMBER)).toBeFalsy();
     expect(isPowerPlantInCommunity).toBeFalsy();
   });
 });

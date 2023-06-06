@@ -414,16 +414,19 @@ export class CommunitiesService {
       );
     }
 
-    await this.communityRepository.findOneAndUpdate(
+    const com = await this.communityRepository.findOneAndUpdate(
       { _id: communityId },
-      { $pull: { powerPlantIds: powerPlants } },
+      {
+        $pullAll: { powerPlantIds: powerPlants },
+      },
     );
 
-    const memberCommunities = await this.findByUser(memberId);
-
-    if (memberCommunities.length === 0) {
-      await this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
-    }
+    // TODO every hard to do if we uses power plants and community member indication
+    // const memberCommunities = await this.findByUser(memberId);
+    //
+    // if (memberCommunities.length === 0) {
+    //   await this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
+    // }
 
     return true;
   }

@@ -9,10 +9,7 @@ import { Calibration } from '../types';
 export class PowerPlantRepository {
   constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
 
-  async createPowerPlant(
-    userId: string,
-    data: CreatePowerPlantDto,
-  ) {
+  async createPowerPlant(userId: string, data: CreatePowerPlantDto) {
     return this.model.findOneAndUpdate(
       { _id: userId },
       { $push: { powerPlants: data } },
@@ -31,6 +28,7 @@ export class PowerPlantRepository {
       { new: true },
     );
   }
+
   async createCalibration(userId: string, powerPlantId, data: Calibration) {
     return this.model.findOneAndUpdate(
       { _id: userId, 'powerPlants._id': powerPlantId },
@@ -81,6 +79,6 @@ export class PowerPlantRepository {
   }
 
   async findAll() {
-    return await this.model.find({}, { powerPlants: 1 });
+    return this.model.find({}, { powerPlants: 1 });
   }
 }
