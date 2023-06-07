@@ -59,10 +59,7 @@ export class PowerPlantsService {
 
         let predictedPower = 0;
         if (powerPlant.calibration.length !== 0) {
-          const predictions = await this.predict(
-            user._id.toString(),
-            _id.toString(),
-          );
+          const predictions = await this.predict(_id.toString());
           predictedPower = predictions.find(
             (p) => p.date === weather.timestamp,
           )?.power;
@@ -262,8 +259,8 @@ export class PowerPlantsService {
     );
   }
 
-  async predictByDays(userId: string, powerPlantId: string) {
-    const predictions = await this.predict(userId, powerPlantId);
+  async predictByDays(powerPlantId: string) {
+    const predictions = await this.predict(powerPlantId);
 
     const sumByDay = predictions.reduce(
       (acc, curr) => {
@@ -283,10 +280,19 @@ export class PowerPlantsService {
   }
 
   async predict(
-    userId: string,
     powerPlantId: string,
   ): Promise<{ date: string; power: number }[]> {
-    const { powerPlants } = await this.findById(userId, powerPlantId);
+    const { powerPlants } = await this.powerPlantRepository.findById(
+      powerPlantId,
+    );
+
+    if (powerPlants.length < 1) {
+      throw new HttpException(
+        'No power plant found',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
     const { calibration, latitude, longitude }: PowerPlant = powerPlants[0];
 
     if (calibration.length < 1) {

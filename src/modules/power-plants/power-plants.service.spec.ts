@@ -248,7 +248,7 @@ describe('power-plants service test', () => {
     );
     const powerPlantId = powerPlant._id.toString();
     try {
-      await powerPlantsService.predict(userId, powerPlantId);
+      await powerPlantsService.predict(powerPlantId);
     } catch (e) {
       expect(e.message).toBe('No calibration data');
     }
@@ -269,7 +269,7 @@ describe('power-plants service test', () => {
     });
 
     try {
-      await powerPlantsService.predict(userId, powerPlantId);
+      await powerPlantsService.predict(powerPlantId);
     } catch (e) {
       expect(e.message).toBe('Could not retrieve data for forecasts');
     }
@@ -286,7 +286,7 @@ describe('power-plants service test', () => {
       power: 100,
     });
 
-    const result = await powerPlantsService.predict(userId, powerPlantId);
+    const result = await powerPlantsService.predict(powerPlantId);
     expect(result[0].power).toBe(100);
   });
 

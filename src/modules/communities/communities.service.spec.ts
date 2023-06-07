@@ -234,18 +234,30 @@ describe('CommunitiesService test', () => {
     }
   });
   it('should remove a member from community', async () => {
+    const powerPlant = await powerPlantsService.create(
+      memberId,
+      'test',
+      powerPlantData,
+    );
+
+    const powerPlantId = powerPlant._id.toString();
+
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
       membersIds: [adminId, memberId],
+      powerPlantsIds: [powerPlantId],
     });
 
-    const success = await communitiesService.removeMember(
+    const success = await communitiesService.removePowerPlants(
+      [powerPlantId],
       memberId,
       community.id,
       adminId,
     );
     const member = await userRepository.findById(memberId);
+    const updateCom = await communitiesRepository.findById(community.id);
+    expect(updateCom.powerPlantIds.length).toBe(0);
     expect(member.roles.includes(Role.POWER_PLANT_OWNER)).toBeTruthy();
     expect(success).toBeTruthy();
   });
@@ -257,7 +269,12 @@ describe('CommunitiesService test', () => {
     });
 
     try {
-      await communitiesService.removeMember(memberId, community.id, userId);
+      await communitiesService.removePowerPlants(
+        [],
+        memberId,
+        community.id,
+        userId,
+      );
     } catch (e) {
       expect(e.message).toBe('You can not remove member from this community');
     }
@@ -270,22 +287,38 @@ describe('CommunitiesService test', () => {
     });
 
     try {
-      await communitiesService.removeMember(adminId, community.id, adminId);
+      await communitiesService.removePowerPlants(
+        [],
+        adminId,
+        community.id,
+        adminId,
+      );
     } catch (e) {
       expect(e.message).toBe('Admin can not remove himself');
     }
   });
   it('should allow member to leave community', async () => {
+    const powerPlant = await powerPlantsService.create(
+      memberId,
+      'test',
+      powerPlantData,
+    );
+
+    const powerPlantId = powerPlant._id.toString();
+
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
       membersIds: [adminId, memberId],
+      powerPlantsIds: [powerPlantId],
     });
 
-    const success = await communitiesService.leave(memberId, community.id);
+    const success = await communitiesService.leave([], memberId, community.id);
     const member = await userRepository.findById(memberId);
+    const updateCom = await communitiesRepository.findById(community.id);
     expect(member.roles.includes(Role.POWER_PLANT_OWNER)).toBeTruthy();
     expect(success).toBeTruthy();
+    expect(updateCom.powerPlantIds.length).toBe(0);
   });
   it('should fail to remove a member from community because member is not a member of this community', async () => {
     const community = await communitiesRepository.create({
@@ -295,7 +328,7 @@ describe('CommunitiesService test', () => {
     });
 
     try {
-      await communitiesService.leave(userId, community.id);
+      await communitiesService.leave([], userId, community.id);
     } catch (e) {
       expect(e.message).toBe('You are not member of this community');
     }
@@ -308,7 +341,7 @@ describe('CommunitiesService test', () => {
     });
 
     try {
-      await communitiesService.leave(adminId, community.id);
+      await communitiesService.leave([], adminId, community.id);
     } catch (e) {
       expect(e.message).toBe('Admin can not leave community');
     }

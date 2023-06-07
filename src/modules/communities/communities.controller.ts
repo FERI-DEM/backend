@@ -70,12 +70,14 @@ export class CommunitiesController {
 
   @Roles(Role.COMMUNITY_ADMIN)
   @Delete('remove/:communityId/:memberId')
-  async deleteMember(
+  async removePowerPlants(
     @Param('memberId') memberId: string,
     @Param('communityId') communityId: string,
     @User('id') adminId: string,
+    @Body() dto: { powerPlantIds: string[] },
   ) {
-    return await this.communitiesService.removeMember(
+    return await this.communitiesService.removePowerPlants(
+      dto.powerPlantIds,
       memberId,
       communityId,
       adminId,
@@ -96,8 +98,13 @@ export class CommunitiesController {
   async leave(
     @Param('communityId') communityId: string,
     @User('id') userId: string,
+    @Body() dto: { powerPlantIds: string[] },
   ) {
-    return await this.communitiesService.leave(userId, communityId);
+    return await this.communitiesService.leave(
+      dto.powerPlantIds,
+      userId,
+      communityId,
+    );
   }
 
   @Post('request-to-join')
@@ -121,5 +128,11 @@ export class CommunitiesController {
   @Get('power-production/:id')
   async getCommunityPowerProduction(@Param('id') id: string) {
     return await this.communitiesService.getCommunityPowerProduction(id);
+  }
+
+  @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
+  @Get('predict-power-production/:id')
+  async getCommunityPredictPowerProduction(@Param('id') id: string) {
+    return await this.communitiesService.predict(id);
   }
 }
