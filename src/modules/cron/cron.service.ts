@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PowerPlantsService } from '../power-plants/power-plants.service';
+import { retryOnFailure } from './utils';
 
 @Injectable()
 export class CronService {
@@ -8,11 +9,11 @@ export class CronService {
 
   @Cron('* */15 * * * *')
   async collectPowerPlantData() {
-    try {
-      await this.service.saveHistoricalData();
-      Logger.log('Cron job ran successfully', 'CronService');
-    } catch (e) {
-      Logger.error(e);
-    }
+    await retryOnFailure<void>(
+      async () => await this.service.saveHistoricalData(),
+      3,
+      (e) => Logger.error(e.message, 'CronService'),
+    );
+    Logger.log('Cron job ran successfully', 'CronService');
   }
 }
