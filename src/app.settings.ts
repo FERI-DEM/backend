@@ -27,12 +27,9 @@ const settings = {
     cassandra: {
       localDataCenter: env
         .get('CASSANDRA_LOCAL_DATA_CENTER')
-        .required(true)
+        .required()
         .asString(),
-      contactPoints: env
-        .get('CASSANDRA_CONTACT_POINTS')
-        .required(true)
-        .asString(),
+      contactPoints: env.get('CASSANDRA_CONTACT_POINTS').required().asString(),
       credentials: {
         username: env.get('CASSANDRA_CLIENT_ID').required(true).asString(),
         password: env.get('CASSANDRA_CLIENT_SECRET').required(true).asString(),
