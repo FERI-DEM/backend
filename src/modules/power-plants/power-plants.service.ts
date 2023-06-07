@@ -29,6 +29,7 @@ import { Statistics } from './types';
 import { getRangeForBefore, getRangeForNow } from './utils/statistics';
 import settings from '../../app.settings';
 import { Env } from '../../common/constants/env.constants';
+import { roundTimeUp } from '../../common/utils';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -326,14 +327,19 @@ export class PowerPlantsService {
         HttpStatus.PRECONDITION_FAILED,
       );
     }
+    const roundedDate = roundTimeUp(new Date(), 15);
+    const roundedTimestamp = roundedDate.getTime();
 
-    // predicted values for 7 day
-    return forecasts.map((f) => {
+    return forecasts.flatMap((f) => {
+      const timestamp = new Date(f.timestamp);
+      if (timestamp.getTime() < roundedTimestamp) return [];
       const predictedPower = f.solar * coefficient;
-      return {
-        date: f.timestamp,
-        power: predictedPower,
-      };
+      return [
+        {
+          date: f.timestamp,
+          power: predictedPower,
+        },
+      ];
     });
   }
 
