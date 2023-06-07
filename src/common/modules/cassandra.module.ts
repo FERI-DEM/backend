@@ -37,7 +37,8 @@ export class CassandraModule {
       };
     }
 
-    const client = new Client(initializeConfig(config));
+    const cfg = initializeConfig(config);
+    const client = new Client(cfg);
 
     const CassandraProvider = {
       provide: CASSANDRA_CLIENT,

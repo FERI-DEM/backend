@@ -36,6 +36,7 @@ async function bootstrap() {
 (async (): Promise<void> => {
   try {
     await bootstrap();
+    NestLogger.log(settings, 'Environment');
   } catch (e) {
     NestLogger.error(e, 'Error');
   }
