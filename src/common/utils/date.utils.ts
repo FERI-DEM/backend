@@ -1,3 +1,4 @@
+import { addMinutes } from 'date-fns';
 export const roundUpDate = (date: string): string => {
   const dateObj = new Date(date);
   const minutes = dateObj.getMinutes();
@@ -62,4 +63,19 @@ export const formatDateTo15minInterval = (date: Date): string => {
   date.setSeconds(0);
   date.setMilliseconds(0);
   return date.toISOString().slice(0, -8);
+};
+
+export const roundTimeUp = (date: Date, roundTo: number): Date => {
+  let remainder;
+  const minutes = date.getMinutes();
+  if (minutes % roundTo === 0) {
+    remainder = roundTo;
+  } else {
+    remainder = roundTo - (minutes % roundTo);
+  }
+  console.log(remainder);
+  date = addMinutes(date, remainder);
+  date.setSeconds(0);
+  date.setMilliseconds(0);
+  return date;
 };
