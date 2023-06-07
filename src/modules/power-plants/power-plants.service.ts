@@ -291,6 +291,7 @@ export class PowerPlantsService {
   async predict(
     userId: string,
     powerPlantId: string,
+    timezoneOffset: number | undefined = 0,
   ): Promise<{ date: string; power: number }[]> {
     const { powerPlants } = await this.findById(userId, powerPlantId);
     const { calibration, latitude, longitude }: PowerPlant = powerPlants[0];
@@ -301,10 +302,6 @@ export class PowerPlantsService {
         HttpStatus.PRECONDITION_FAILED,
       );
     }
-
-    // get weather forecast for next 7 days
-    const toDate = new Date();
-    toDate.setDate(toDate.getDate() + 7);
 
     const forecasts = await this.forecastService.getSolarRadiationForecast(
       latitude,
@@ -336,7 +333,9 @@ export class PowerPlantsService {
       const predictedPower = f.solar * coefficient;
       return [
         {
-          date: f.timestamp,
+          date: new Date(
+            timestamp.getTime() + timezoneOffset * 60 * 60 * 1000,
+          ).toISOString(),
           power: predictedPower,
         },
       ];
