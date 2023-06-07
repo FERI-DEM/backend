@@ -59,10 +59,7 @@ export class PowerPlantsService {
 
         let predictedPower = 0;
         if (powerPlant.calibration.length !== 0) {
-          const predictions = await this.predict(
-            user._id.toString(),
-            _id.toString(),
-          );
+          const predictions = await this.predict(_id.toString());
           predictedPower = predictions.find(
             (p) => p.date === weather.timestamp,
           )?.power;
@@ -212,19 +209,13 @@ export class PowerPlantsService {
     );
   }
 
-  async history(
-    userId: string,
-    powerPlantIds: string[],
-    dateFrom?: string,
-    dateTo?: string,
-  ) {
-    const history = await getHistoricalData(
+  async history(powerPlantIds: string[], dateFrom?: string, dateTo?: string) {
+    return await getHistoricalData(
       this.cassandraClient,
       [powerPlantIds].flat(),
       dateFrom ? new Date(dateFrom) : new Date(0),
       dateTo ? new Date(dateTo) : new Date(),
     );
-    return history;
   }
 
   async calibrate(
@@ -268,8 +259,8 @@ export class PowerPlantsService {
     );
   }
 
-  async predictByDays(userId: string, powerPlantId: string) {
-    const predictions = await this.predict(userId, powerPlantId);
+  async predictByDays(powerPlantId: string) {
+    const predictions = await this.predict(powerPlantId);
 
     const sumByDay = predictions.reduce(
       (acc, curr) => {
@@ -289,11 +280,20 @@ export class PowerPlantsService {
   }
 
   async predict(
-    userId: string,
     powerPlantId: string,
     timezoneOffset: number | undefined = 0,
   ): Promise<{ date: string; power: number }[]> {
-    const { powerPlants } = await this.findById(userId, powerPlantId);
+    const { powerPlants } = await this.powerPlantRepository.findById(
+      powerPlantId,
+    );
+
+    if (powerPlants.length < 1) {
+      throw new HttpException(
+        'No power plant found',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
     const { calibration, latitude, longitude }: PowerPlant = powerPlants[0];
 
     if (calibration.length < 1) {
@@ -344,5 +344,34 @@ export class PowerPlantsService {
 
   private async findAll() {
     return await this.powerPlantRepository.findAll();
+  }
+
+  async getProduction(powerPlantId: string) {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    const endOfMonth = new Date();
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+    endOfMonth.setDate(0);
+
+    const historicalData = await this.history(
+      [powerPlantId],
+      startOfMonth.toISOString(),
+      endOfMonth.toISOString(),
+    );
+
+    let productionThisMonth = 0;
+    for (let i = 0; i < historicalData.length; i++) {
+      productionThisMonth += historicalData[i].predictedPower;
+    }
+
+    const powerPlant = await this.powerPlantRepository.findById(powerPlantId);
+
+    return {
+      from: startOfMonth,
+      to: endOfMonth,
+      powerPlantId: powerPlantId,
+      email: powerPlant.email,
+      production: productionThisMonth,
+    };
   }
 }

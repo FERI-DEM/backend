@@ -188,45 +188,6 @@ export class CommunitiesService {
     return true;
   }
 
-  async removeMember(
-    memberId: string,
-    communityId: string,
-    adminId: string,
-  ): Promise<boolean> {
-    if (adminId === memberId) {
-      throw new HttpException(
-        'Admin can not remove himself',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const isMember = await this.isMemberOfAdminsCommunity(
-      memberId,
-      communityId,
-      adminId,
-    );
-
-    if (!isMember) {
-      throw new HttpException(
-        'You can not remove member from this community',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    await this.communityRepository.findOneAndUpdate(
-      { _id: communityId },
-      { $pull: { membersIds: memberId } },
-    );
-
-    const memberCommunities = await this.findByUser(memberId);
-
-    if (memberCommunities.length === 0) {
-      await this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
-    }
-
-    return true;
-  }
-
   async delete(communityId: string, adminId: string): Promise<boolean> {
     const deleteCommunity = await this.communityRepository.findOneAndDelete({
       _id: communityId,
@@ -251,7 +212,11 @@ export class CommunitiesService {
     return !!deleteCommunity;
   }
 
-  async leave(memberId: string, communityId: string): Promise<boolean> {
+  async leave(
+    powerPlants: string[],
+    memberId: string,
+    communityId: string,
+  ): Promise<boolean> {
     try {
       await this.usersService.findById(memberId);
     } catch (e) {
@@ -279,7 +244,10 @@ export class CommunitiesService {
 
     await this.communityRepository.findOneAndUpdate(
       { _id: communityId },
-      { $pull: { membersIds: memberId } },
+      {
+        $pull: { membersIds: memberId },
+        $pullAll: { powerPlantIds: powerPlants },
+      },
     );
 
     const memberCommunities = await this.findByUser(memberId);
@@ -433,20 +401,103 @@ export class CommunitiesService {
       );
     }
 
-    const com = await this.communityRepository.findOneAndUpdate(
+    const isPowerPlantInCommunity = (
+      powerPlantId: string,
+      community: CommunityDocument,
+    ): boolean => {
+      return community.powerPlantIds.some((p) => p === powerPlantId);
+    };
+
+    // TODO do i need to remove member from community if he has no power plants in it ?
+    await this.communityRepository.findOneAndUpdate(
       { _id: communityId },
       {
         $pullAll: { powerPlantIds: powerPlants },
       },
     );
 
-    // TODO every hard to do if we uses power plants and community member indication
-    // const memberCommunities = await this.findByUser(memberId);
-    //
-    // if (memberCommunities.length === 0) {
-    //   await this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
-    // }
+    const memberCommunities = await this.findByUser(memberId);
+    const { powerPlants: memberPowerPlants } =
+      await this.powerPlantsService.findByUser(memberId);
+
+    if (memberCommunities.length === 0 && memberPowerPlants.length === 0) {
+      await this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
+      return true;
+    }
+
+    let powerPlantsInCommunities = 0;
+    for (let i = 0; i < memberCommunities.length; i++) {
+      const community = memberCommunities[i];
+
+      for (let j = 0; j < memberPowerPlants.length; j++) {
+        const powerPlantId = memberPowerPlants[j]._id.toString();
+        const isIn = isPowerPlantInCommunity(powerPlantId, community);
+        if (isIn) {
+          powerPlantsInCommunities++;
+        }
+      }
+    }
+
+    if (powerPlantsInCommunities === 0) {
+      await this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
+    }
 
     return true;
+  }
+
+  async predict(communityId: string) {
+    const community = await this.findById(communityId);
+    const powerPlants = community.powerPlantIds;
+
+    const predictions = (
+      await Promise.all(
+        powerPlants.map((powerPlantId) =>
+          this.powerPlantsService.predict(powerPlantId),
+        ),
+      )
+    ).flat();
+    const communityPrediction: typeof predictions = [];
+
+    for (let i = 0; i < predictions.length; i++) {
+      const timestamp = predictions[i].date;
+
+      const predictionSum = {
+        date: timestamp,
+        power: 0,
+      };
+
+      for (let j = 0; j < predictions.length; j++) {
+        if (timestamp === predictions[j].date) {
+          predictionSum.power += predictions[j].power;
+        }
+      }
+
+      communityPrediction.push(predictionSum);
+    }
+
+    return communityPrediction;
+  }
+
+  async getCommunityPowerProduction(communityId: string) {
+    const community = await this.findById(communityId);
+    const powerPlants = community.powerPlantIds;
+
+    const production = await Promise.all(
+      powerPlants.map((powerPlantId) =>
+        this.powerPlantsService.getProduction(powerPlantId),
+      ),
+    );
+
+    let productionSum = 0;
+    for (let i = 0; i < production.length; i++) {
+      productionSum += production[i].production;
+    }
+
+    return {
+      from: production[0].from,
+      to: production[0].to,
+      powerPlants: production,
+      production: productionSum,
+    };
   }
 }

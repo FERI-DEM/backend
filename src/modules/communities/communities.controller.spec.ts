@@ -88,7 +88,7 @@ describe('CommunitiesController test', () => {
     );
   });
   it('should remove a member from a community', async () => {
-    const res = await controller.deleteMember(
+    const res = await controller.removePowerPlants(
       communityData.id,
       communityData.membersIds[0],
       communityData.adminId,

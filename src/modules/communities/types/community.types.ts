@@ -2,6 +2,7 @@ export interface Community {
   id: string;
   name: string;
   adminId: string;
+  powerPlantIds: string[];
   members: {
     userId: string;
     powerPlantId: string;

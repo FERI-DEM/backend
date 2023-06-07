@@ -17,18 +17,6 @@ export class PowerPlantRepository {
     );
   }
 
-  async initializeCalibration(
-    userId: string,
-    powerPlantId: string,
-    data: { date: string; value: number }[],
-  ) {
-    return this.model.findOneAndUpdate(
-      { _id: userId, 'powerPlants._id': powerPlantId },
-      { $set: { 'powerPlants.$.calibration': [] } },
-      { new: true },
-    );
-  }
-
   async createCalibration(userId: string, powerPlantId, data: Calibration) {
     return this.model.findOneAndUpdate(
       { _id: userId, 'powerPlants._id': powerPlantId },
@@ -49,6 +37,13 @@ export class PowerPlantRepository {
     return this.model.findOne(
       { _id: userId, 'powerPlants._id': powerPlantId },
       { 'powerPlants.$': 1 },
+    );
+  }
+
+  async findById(id: string) {
+    return this.model.findOne(
+      { 'powerPlants._id': id },
+      { 'powerPlants.$': 1, email: 1 },
     );
   }
 

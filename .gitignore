@@ -40,5 +40,6 @@ lerna-debug.log*
 .env.development
 .env.test
 .env.production
+.env.docker
 
 firebase-service-account.json

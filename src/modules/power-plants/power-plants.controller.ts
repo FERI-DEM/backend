@@ -32,13 +32,11 @@ export class PowerPlantsController {
   @Roles(Role.POWER_PLANT_OWNER)
   @Get('history')
   async history(
-    @User('id') userId: string,
     @Query('powerPlantIds') powerPlantIds: string[],
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
     return await this.powerPlantService.history(
-      userId,
       powerPlantIds,
       dateFrom,
       dateTo,
@@ -95,20 +93,13 @@ export class PowerPlantsController {
     @User('id') userId: string,
     @Headers('TimezoneOffset') timezoneOffset?: number,
   ) {
-    return await this.powerPlantService.predict(
-      userId,
-      powerPlantId,
-      timezoneOffset,
-    );
+    return await this.powerPlantService.predict(powerPlantId, timezoneOffset);
   }
 
   @Roles(Role.POWER_PLANT_OWNER)
   @Get('predict-by-days/:id')
-  async predictByDays(
-    @Param('id') powerPlantId: string,
-    @User('id') userId: string,
-  ) {
-    return await this.powerPlantService.predictByDays(userId, powerPlantId);
+  async predictByDays(@Param('id') powerPlantId: string) {
+    return await this.powerPlantService.predictByDays(powerPlantId);
   }
 
   @Roles(Role.POWER_PLANT_OWNER)

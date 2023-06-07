@@ -2,9 +2,23 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { Client, type DseClientOptions } from 'cassandra-driver';
 import { Logger as NestLogger } from '@nestjs/common';
 import settings from '../../app.settings';
-import { Env } from '../constants/env.constants';
+import { Deployment, Env } from '../constants/env.constants';
 
 export const CASSANDRA_CLIENT = 'CASSANDRA_CLIENT';
+
+export const initializeConfig = (
+  config: DseClientOptions,
+): DseClientOptions => {
+  if (settings.deployment === Deployment.DOCKER) {
+    return {
+      contactPoints: [settings.database.cassandra.contactPoints],
+      localDataCenter: settings.database.cassandra.localDataCenter,
+      keyspace: settings.database.cassandra.keyspace,
+    } as DseClientOptions;
+  } else {
+    return config;
+  }
+};
 
 @Module({})
 export class CassandraModule {
@@ -23,7 +37,8 @@ export class CassandraModule {
       };
     }
 
-    const client = new Client(config);
+    const cfg = initializeConfig(config);
+    const client = new Client(cfg);
 
     const CassandraProvider = {
       provide: CASSANDRA_CLIENT,
