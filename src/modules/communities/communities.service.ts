@@ -449,4 +449,61 @@ export class CommunitiesService {
 
     return true;
   }
+
+  async predict(communityId: string) {
+    const community = await this.findById(communityId);
+    const powerPlants = community.powerPlantIds;
+
+    const predictions = (
+      await Promise.all(
+        powerPlants.map((powerPlantId) =>
+          // TODO remove user id from arguments
+          this.powerPlantsService.predict('userId', powerPlantId),
+        ),
+      )
+    ).flat();
+    const communityPrediction: typeof predictions = [];
+
+    for (let i = 0; i < predictions.length; i++) {
+      const timestamp = predictions[i].date;
+
+      const predictionSum = {
+        date: timestamp,
+        power: 0,
+      };
+
+      for (let j = 0; j < predictions.length; j++) {
+        if (timestamp === predictions[j].date) {
+          predictionSum.power += predictions[j].power;
+        }
+      }
+
+      communityPrediction.push(predictionSum);
+    }
+
+    return communityPrediction;
+  }
+
+  async getCommunityPowerProduction(communityId: string) {
+    const community = await this.findById(communityId);
+    const powerPlants = community.powerPlantIds;
+
+    const production = await Promise.all(
+      powerPlants.map((powerPlantId) =>
+        this.powerPlantsService.getProduction(powerPlantId),
+      ),
+    );
+
+    let productionSum = 0;
+    for (let i = 0; i < production.length; i++) {
+      productionSum += production[i].production;
+    }
+
+    return {
+      from: production[0].from,
+      to: production[0].to,
+      powerPlants: production,
+      production: productionSum,
+    };
+  }
 }

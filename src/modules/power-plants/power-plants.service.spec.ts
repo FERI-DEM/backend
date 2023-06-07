@@ -13,6 +13,7 @@ import { ForecastsService } from '../forecasts/forecasts.service';
 import { FirebaseService } from '../../common/services';
 import clearAllMocks = jest.clearAllMocks;
 import { OpenMeteoAPI } from '../forecasts/strategies/open-meteo.strategy';
+import { HistoricalData } from './utils/cassandra-queries';
 
 describe('power-plants service test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -22,6 +23,8 @@ describe('power-plants service test', () => {
     userRepository: UserRepository,
     firebaseService: FirebaseService,
     userId: string;
+
+  const userMail = faker.internet.email();
 
   const forecastServiceMock = {
     getCurrentSolarRadiation: jest.fn().mockResolvedValue({
@@ -66,7 +69,7 @@ describe('power-plants service test', () => {
     userId = (
       await userService.create({
         userId: faker.datatype.uuid(),
-        email: faker.internet.email(),
+        email: userMail,
       })
     ).id;
   });
@@ -285,5 +288,26 @@ describe('power-plants service test', () => {
 
     const result = await powerPlantsService.predict(userId, powerPlantId);
     expect(result[0].power).toBe(100);
+  });
+
+  it('should calculate power plant production for this month', async () => {
+    jest
+      .spyOn(powerPlantsService, 'history')
+      .mockResolvedValueOnce([
+        { predictedPower: 100 },
+        { predictedPower: 100 },
+      ] as HistoricalData[]);
+
+    const powerPlant = await powerPlantsService.create(
+      userId,
+      'test',
+      powerPlantData,
+    );
+    const powerPlantId = powerPlant._id.toString();
+
+    const res = await powerPlantsService.getProduction(powerPlantId);
+    expect(res.powerPlantId).toBe(powerPlantId);
+    expect(res.production).toBe(200);
+    expect(res.email).toBe(userMail);
   });
 });

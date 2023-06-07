@@ -31,13 +31,11 @@ export class PowerPlantsController {
   @Roles(Role.POWER_PLANT_OWNER)
   @Get('history')
   async history(
-    @User('id') userId: string,
     @Query('powerPlantIds') powerPlantIds: string[],
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
     return await this.powerPlantService.history(
-      userId,
       powerPlantIds,
       dateFrom,
       dateTo,

@@ -211,19 +211,13 @@ export class PowerPlantsService {
     );
   }
 
-  async history(
-    userId: string,
-    powerPlantIds: string[],
-    dateFrom?: string,
-    dateTo?: string,
-  ) {
-    const history = await getHistoricalData(
+  async history(powerPlantIds: string[], dateFrom?: string, dateTo?: string) {
+    return await getHistoricalData(
       this.cassandraClient,
       [powerPlantIds].flat(),
       dateFrom ? new Date(dateFrom) : new Date(0),
       dateTo ? new Date(dateTo) : new Date(),
     );
-    return history;
   }
 
   async calibrate(
@@ -339,5 +333,34 @@ export class PowerPlantsService {
 
   private async findAll() {
     return await this.powerPlantRepository.findAll();
+  }
+
+  async getProduction(powerPlantId: string) {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    const endOfMonth = new Date();
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+    endOfMonth.setDate(0);
+
+    const historicalData = await this.history(
+      [powerPlantId],
+      startOfMonth.toISOString(),
+      endOfMonth.toISOString(),
+    );
+
+    let productionThisMonth = 0;
+    for (let i = 0; i < historicalData.length; i++) {
+      productionThisMonth += historicalData[i].predictedPower;
+    }
+
+    const powerPlant = await this.powerPlantRepository.findById(powerPlantId);
+
+    return {
+      from: startOfMonth,
+      to: endOfMonth,
+      powerPlantId: powerPlantId,
+      email: powerPlant.email,
+      production: productionThisMonth,
+    };
   }
 }

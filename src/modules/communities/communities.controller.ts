@@ -45,6 +45,7 @@ export class CommunitiesController {
   async findById(@Param('id') id: string) {
     return await this.communitiesService.findById(id);
   }
+
   @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
   @Get(':id/members-power-share')
   async getMembersPowerShare(@Param('id') id: string) {
@@ -114,5 +115,11 @@ export class CommunitiesController {
     @Body() dto: ProcessRequestDto,
   ) {
     return await this.communitiesService.processRequest({ ...dto, adminId });
+  }
+
+  @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
+  @Get('power-production/:id')
+  async getCommunityPowerProduction(@Param('id') id: string) {
+    return await this.communitiesService.getCommunityPowerProduction(id);
   }
 }
