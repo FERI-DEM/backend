@@ -93,10 +93,7 @@ export class PowerPlantsController {
     @User('id') userId: string,
     @Headers('TimezoneOffset') timezoneOffset?: number,
   ) {
-    return await this.powerPlantService.predict(
-      powerPlantId,
-      timezoneOffset,
-    );
+    return await this.powerPlantService.predict(powerPlantId, timezoneOffset);
   }
 
   @Roles(Role.POWER_PLANT_OWNER)
