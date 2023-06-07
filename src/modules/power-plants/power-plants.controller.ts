@@ -8,8 +8,9 @@ import {
   Post,
   Query,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiHeader } from '@nestjs/swagger';
 import { PowerPlantsService } from './power-plants.service';
 import {
   CreateCalibrationDto,
@@ -82,8 +83,20 @@ export class PowerPlantsController {
 
   @Roles(Role.POWER_PLANT_OWNER)
   @Get('predict/:id')
-  async predict(@Param('id') powerPlantId: string) {
-    return await this.powerPlantService.predict(powerPlantId);
+  @ApiHeader({
+    name: 'TimezoneOffset',
+    description: 'Timezone offset in hours',
+    required: false,
+  })
+  async predict(
+    @Param('id') powerPlantId: string,
+    @User('id') userId: string,
+    @Headers('TimezoneOffset') timezoneOffset?: number,
+  ) {
+    return await this.powerPlantService.predict(
+      powerPlantId,
+      timezoneOffset,
+    );
   }
 
   @Roles(Role.POWER_PLANT_OWNER)
