@@ -324,11 +324,11 @@ export class PowerPlantsService {
         HttpStatus.PRECONDITION_FAILED,
       );
     }
-    const roundedDate = roundTimeUp(new Date(), 15);
-    const roundedTimestamp = roundedDate.getTime();
+    const roundedDate = roundTimeUp(new Date(Date.now()), 15);
+    const roundedTimestamp = new Date(roundedDate.toISOString()).getTime();
 
     return forecasts.flatMap((f) => {
-      const timestamp = new Date(f.timestamp);
+      const timestamp = new Date(f.timestamp + ':00.000Z');
       if (timestamp.getTime() < roundedTimestamp) return [];
       const predictedPower = f.solar * coefficient;
       return [
