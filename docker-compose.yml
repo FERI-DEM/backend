@@ -1,5 +1,16 @@
 version: '3.1'
 services:
+  backend:
+    build: .
+    ports:
+      - "3000:3000"
+    restart: always
+    env_file: .env.docker
+    environment:
+      - MONGO_URI=mongodb://root:root@mongo:27017/db
+      - CASSANDRA_URI=cassandra:9042
+    depends_on: [ cassandra, mongo ]
+
   cassandra:
     image: cassandra:4.0
     container_name: cassandra
@@ -7,9 +18,10 @@ services:
     ports:
       - "9042:9042"
     volumes:
-        - ./data/cassandra:/var/lib/cassandra
+      - ./data/cassandra:/var/lib/cassandra
     environment:
-      CASSANDRA_CLUSTER_NAME: "Cluster"
+      CASSANDRA_CLUSTER_NAME: "watt4cast"
+      CASSNADRA_KEYSPACE: "w4c"
       CASSANDRA_DC: "datacenter1"
 
   mongo:
@@ -26,3 +38,4 @@ services:
       MONGO_INITDB_DATABASE: db
 volumes:
   mongo:
+  cassandra:
