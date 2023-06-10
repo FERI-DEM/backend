@@ -71,8 +71,10 @@ export class PowerPlantsService {
         let predictedPower = 0;
         if (powerPlant.calibration.length !== 0) {
           const predictions = await this.predict(_id.toString());
+          const predictedDate = new Date(weather.timestamp);
+          predictedDate.setMinutes(predictedDate.getMinutes() + 15);
           predictedPower = predictions.find(
-            (p) => p.date === weather.timestamp,
+            (p) => new Date(p.date).getTime() === predictedDate.getTime(),
           )?.power;
         }
 
