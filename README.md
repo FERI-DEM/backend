@@ -21,6 +21,13 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Running the with docker
+
+```bash
+ docker build -t watt4cast .
+ docker run -p 3001:3001 --env-file .env.development watt4cast 
+```
+
 ## Test
 
 ```bash
@@ -57,6 +64,8 @@ FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
 FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
 FIREBASE_AUTH_PROVIDER_X509_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
 FIREBASE_CLIENT_X509_CERT_URL=https://www.google
+
+# casandra
 CASSANDRA_CLIENT_ID=test
 CASSANDRA_CLIENT_SECRET=test
 CASSANDRA_KEYSPACE=w4c

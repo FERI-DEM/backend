@@ -71,6 +71,7 @@ export class CommunityRepository extends EntityRepository<CommunityDocument> {
                 isAdmin: {
                   $eq: [{ $toString: '$adminId' }, { $toString: '$user._id' }],
                 },
+                calibration: { $last: '$powerPlant.powerPlants.calibration' },
               },
             },
           },

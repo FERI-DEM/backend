@@ -3,3 +3,8 @@ export enum Env {
   PRODUCTION = 'production',
   TEST = 'test',
 }
+
+export enum Deployment {
+  DOCKER = 'docker',
+  CLOUD = 'cloud',
+}

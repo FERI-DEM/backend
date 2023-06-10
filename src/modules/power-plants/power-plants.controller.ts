@@ -8,8 +8,9 @@ import {
   Post,
   Query,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiHeader } from '@nestjs/swagger';
 import { PowerPlantsService } from './power-plants.service';
 import {
   CreateCalibrationDto,
@@ -31,13 +32,11 @@ export class PowerPlantsController {
   @Roles(Role.POWER_PLANT_OWNER)
   @Get('history')
   async history(
-    @User('id') userId: string,
     @Query('powerPlantIds') powerPlantIds: string[],
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
     return await this.powerPlantService.history(
-      userId,
       powerPlantIds,
       dateFrom,
       dateTo,
@@ -69,10 +68,7 @@ export class PowerPlantsController {
   @Roles(Role.POWER_PLANT_OWNER)
   @Get(':id')
   async find(@Param('id') powerPlantId: string, @User('id') userId: string) {
-    return await this.powerPlantService.findPowerPlantWithHistoricData(
-      userId,
-      powerPlantId,
-    );
+    return await this.powerPlantService.findById(userId, powerPlantId);
   }
 
   @Roles(Role.POWER_PLANT_OWNER)
@@ -87,17 +83,23 @@ export class PowerPlantsController {
 
   @Roles(Role.POWER_PLANT_OWNER)
   @Get('predict/:id')
-  async predict(@Param('id') powerPlantId: string, @User('id') userId: string) {
-    return await this.powerPlantService.predict(userId, powerPlantId);
+  @ApiHeader({
+    name: 'TimezoneOffset',
+    description: 'Timezone offset in hours',
+    required: false,
+  })
+  async predict(
+    @Param('id') powerPlantId: string,
+    @User('id') userId: string,
+    @Headers('TimezoneOffset') timezoneOffset?: number,
+  ) {
+    return await this.powerPlantService.predict(powerPlantId, timezoneOffset);
   }
 
   @Roles(Role.POWER_PLANT_OWNER)
   @Get('predict-by-days/:id')
-  async predictByDays(
-    @Param('id') powerPlantId: string,
-    @User('id') userId: string,
-  ) {
-    return await this.powerPlantService.predictByDays(userId, powerPlantId);
+  async predictByDays(@Param('id') powerPlantId: string) {
+    return await this.powerPlantService.predictByDays(powerPlantId);
   }
 
   @Roles(Role.POWER_PLANT_OWNER)

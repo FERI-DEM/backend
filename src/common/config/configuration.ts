@@ -1,5 +1,5 @@
 import * as env from 'env-var';
-import { Env } from '../constants/env.constants';
+import { Deployment, Env } from '../constants/env.constants';
 
 export default () => ({
   environment: env
@@ -7,6 +7,10 @@ export default () => ({
     .required(true)
     .default(Env.DEVELOPMENT)
     .asEnum(Object.values(Env)),
+  deployment: env
+    .get('DEPLOYMENT')
+    .default(Deployment.CLOUD)
+    .asEnum(Object.values(Deployment)),
   app: {
     port: env.get('PORT').default(3000).asPortNumber(),
     swaggerPath: env.get('SWAGGER_PATH').default('').asString(),
@@ -14,6 +18,14 @@ export default () => ({
   database: {
     uri: env.get('DB_URI').required(true).asString(),
     cassandra: {
+      localDataCenter: env
+        .get('CASSANDRA_LOCAL_DATA_CENTER')
+        .required(false)
+        .asString(),
+      contactPoints: env
+        .get('CASSANDRA_CONTACT_POINTS')
+        .required(false)
+        .asString(),
       credentials: {
         username: env.get('CASSANDRA_CLIENT_ID').required(true).asString(),
         password: env.get('CASSANDRA_CLIENT_SECRET').required(true).asString(),

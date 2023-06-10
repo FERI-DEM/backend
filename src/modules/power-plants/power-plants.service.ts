@@ -30,6 +30,7 @@ import { getRangeForBefore, getRangeForNow } from './utils/statistics';
 import settings from '../../app.settings';
 import { Env } from '../../common/constants/env.constants';
 import { formatDateTo15minInterval } from '../../common/utils';
+import { roundTimeUp } from '../../common/utils';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -69,10 +70,7 @@ export class PowerPlantsService {
 
         let predictedPower = 0;
         if (powerPlant.calibration.length !== 0) {
-          const predictions = await this.predict(
-            user._id.toString(),
-            _id.toString(),
-          );
+          const predictions = await this.predict(_id.toString());
           predictedPower = predictions.find(
             (p) => p.date === weather.timestamp,
           )?.power;
@@ -211,26 +209,6 @@ export class PowerPlantsService {
     return powerPlant;
   }
 
-  async findPowerPlantWithHistoricData(userId: string, powerPlantId: string) {
-    const powerPlant = await this.powerPlantRepository.findPowerPlantById(
-      userId,
-      powerPlantId,
-    );
-
-    if (!powerPlant) {
-      throw new NotFoundException('Power plant not found');
-    }
-
-    // TODO
-    // const history = await getHistoricalDataById(
-    //   this.cassandraClient,
-    //   powerPlantId,
-    // );
-    //
-    // return { ...powerPlant.toObject(), history };
-    return powerPlant;
-  }
-
   async findByUser(userId: string) {
     return await this.powerPlantRepository.findPowerPlantByUserId(userId);
   }
@@ -247,19 +225,13 @@ export class PowerPlantsService {
     );
   }
 
-  async history(
-    userId: string,
-    powerPlantIds: string[],
-    dateFrom?: string,
-    dateTo?: string,
-  ) {
-    const history = await getHistoricalData(
+  async history(powerPlantIds: string[], dateFrom?: string, dateTo?: string) {
+    return await getHistoricalData(
       this.cassandraClient,
       [powerPlantIds].flat(),
       dateFrom ? new Date(dateFrom) : new Date(0),
       dateTo ? new Date(dateTo) : new Date(),
     );
-    return history;
   }
 
   async calibrate(
@@ -303,8 +275,8 @@ export class PowerPlantsService {
     );
   }
 
-  async predictByDays(userId: string, powerPlantId: string) {
-    const predictions = await this.predict(userId, powerPlantId);
+  async predictByDays(powerPlantId: string) {
+    const predictions = await this.predict(powerPlantId);
 
     const sumByDay = predictions.reduce(
       (acc, curr) => {
@@ -324,10 +296,20 @@ export class PowerPlantsService {
   }
 
   async predict(
-    userId: string,
     powerPlantId: string,
+    timezoneOffset: number | undefined = 0,
   ): Promise<{ date: string; power: number }[]> {
-    const { powerPlants } = await this.findById(userId, powerPlantId);
+    const { powerPlants } = await this.powerPlantRepository.findById(
+      powerPlantId,
+    );
+
+    if (powerPlants.length < 1) {
+      throw new HttpException(
+        'No power plant found',
+        HttpStatus.PRECONDITION_FAILED,
+      );
+    }
+
     const { calibration, latitude, longitude }: PowerPlant = powerPlants[0];
 
     if (calibration.length < 1) {
@@ -336,10 +318,6 @@ export class PowerPlantsService {
         HttpStatus.PRECONDITION_FAILED,
       );
     }
-
-    // get weather forecast for next 7 days
-    const toDate = new Date();
-    toDate.setDate(toDate.getDate() + 7);
 
     const forecasts = await this.forecastService.getSolarRadiationForecast(
       latitude,
@@ -354,22 +332,6 @@ export class PowerPlantsService {
     }
 
     // TODO: last calibration or average
-    // const { power, radiation } = calibration[calibration.length - 1];
-    //
-    // if (radiation <= 0) {
-    //   throw new HttpException(
-    //     'Radiation can not be 0 or lower',
-    //     HttpStatus.PRECONDITION_FAILED,
-    //   );
-    // }
-    //
-    // if (power <= 0) {
-    //   throw new HttpException(
-    //     'Power can not be 0 or lower',
-    //     HttpStatus.PRECONDITION_FAILED,
-    //   );
-    // }
-
     const coefficient = calibration[calibration.length - 1].value;
 
     if (coefficient <= 0) {
@@ -378,18 +340,54 @@ export class PowerPlantsService {
         HttpStatus.PRECONDITION_FAILED,
       );
     }
+    const roundedDate = roundTimeUp(new Date(Date.now()), 15);
+    const roundedTimestamp = new Date(roundedDate.toISOString()).getTime();
 
-    // predicted values for 7 day
-    return forecasts.map((f) => {
+    return forecasts.flatMap((f) => {
+      const timestamp = new Date(f.timestamp + ':00.000Z');
+      if (timestamp.getTime() < roundedTimestamp) return [];
       const predictedPower = f.solar * coefficient;
-      return {
-        date: f.timestamp,
-        power: predictedPower,
-      };
+      return [
+        {
+          date: new Date(
+            timestamp.getTime() + timezoneOffset * 60 * 60 * 1000,
+          ).toISOString(),
+          power: predictedPower,
+        },
+      ];
     });
   }
 
   private async findAll() {
     return await this.powerPlantRepository.findAll();
+  }
+
+  async getProduction(powerPlantId: string) {
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    const endOfMonth = new Date();
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+    endOfMonth.setDate(0);
+
+    const historicalData = await this.history(
+      [powerPlantId],
+      startOfMonth.toISOString(),
+      endOfMonth.toISOString(),
+    );
+
+    let productionThisMonth = 0;
+    for (let i = 0; i < historicalData.length; i++) {
+      productionThisMonth += historicalData[i].predictedPower;
+    }
+
+    const powerPlant = await this.powerPlantRepository.findById(powerPlantId);
+
+    return {
+      from: startOfMonth,
+      to: endOfMonth,
+      powerPlantId: powerPlantId,
+      email: powerPlant.email,
+      production: productionThisMonth,
+    };
   }
 }

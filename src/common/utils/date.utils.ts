@@ -1,27 +1,4 @@
-export const roundUpDate = (date: string): string => {
-  const dateObj = new Date(date);
-  const minutes = dateObj.getMinutes();
-
-  let roundedMinutes;
-  if (minutes < 15) {
-    roundedMinutes = 0;
-  }
-  if (minutes >= 15 && minutes < 30) {
-    roundedMinutes = 30;
-  }
-  if (minutes >= 30 && minutes < 45) {
-    roundedMinutes = 30;
-  }
-
-  if (minutes >= 45) {
-    roundedMinutes = 0;
-    dateObj.setHours(dateObj.getHours() + 1);
-  }
-  dateObj.setMinutes(roundedMinutes);
-  dateObj.setSeconds(0);
-  dateObj.setMilliseconds(0);
-  return dateObj.toISOString();
-};
+import { addMinutes } from 'date-fns';
 
 export const formatDateToNearestHour = (date: Date): string => {
   const minutes = date.getMinutes();
@@ -59,6 +36,20 @@ export const formatDateTo15minInterval = (date: Date): Date => {
   }
 
   date.setMinutes(roundedMinutes);
+  date.setSeconds(0);
+  date.setMilliseconds(0);
+  return date;
+};
+
+export const roundTimeUp = (date: Date, roundTo: number): Date => {
+  let remainder;
+  const minutes = date.getMinutes();
+  if (minutes % roundTo === 0) {
+    remainder = roundTo;
+  } else {
+    remainder = roundTo - (minutes % roundTo);
+  }
+  date = addMinutes(date, remainder);
   date.setSeconds(0);
   date.setMilliseconds(0);
   return date;

@@ -1,0 +1,13 @@
+data
+node_modules
+.github
+test/
+Dockerfile
+README.md
+
+.eslintrc.js
+.prettierrc
+.gitignore
+.env.development
+.env.test
+

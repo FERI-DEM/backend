@@ -13,6 +13,7 @@ import { ForecastsService } from '../forecasts/forecasts.service';
 import { FirebaseService } from '../../common/services';
 import clearAllMocks = jest.clearAllMocks;
 import { OpenMeteoAPI } from '../forecasts/strategies/open-meteo.strategy';
+import { HistoricalData } from './utils/cassandra-queries';
 
 describe('power-plants service test', () => {
   let moduleRef: TestingModuleBuilder,
@@ -22,6 +23,8 @@ describe('power-plants service test', () => {
     userRepository: UserRepository,
     firebaseService: FirebaseService,
     userId: string;
+
+  const userMail = faker.internet.email();
 
   const forecastServiceMock = {
     getCurrentSolarRadiation: jest.fn().mockResolvedValue({
@@ -38,8 +41,6 @@ describe('power-plants service test', () => {
     displayName: faker.name.firstName(),
     latitude: 30,
     longitude: 30,
-    maxPower: 100,
-    size: 100,
   };
 
   beforeAll(async () => {
@@ -68,7 +69,7 @@ describe('power-plants service test', () => {
     userId = (
       await userService.create({
         userId: faker.datatype.uuid(),
-        email: faker.internet.email(),
+        email: userMail,
       })
     ).id;
   });
@@ -105,8 +106,6 @@ describe('power-plants service test', () => {
     expect(rolesBefore[0]).toBe(Role.BASIC_USER);
     expect(rolesAfter[1]).toBe(Role.POWER_PLANT_OWNER);
     expect(result.displayName).toBe(powerPlantData.displayName);
-    expect(result.maxPower).toBe(powerPlantData.maxPower);
-    expect(result.size).toBe(powerPlantData.size);
   });
 
   it('should delete power plant', async () => {
@@ -249,7 +248,7 @@ describe('power-plants service test', () => {
     );
     const powerPlantId = powerPlant._id.toString();
     try {
-      await powerPlantsService.predict(userId, powerPlantId);
+      await powerPlantsService.predict(powerPlantId);
     } catch (e) {
       expect(e.message).toBe('No calibration data');
     }
@@ -270,7 +269,7 @@ describe('power-plants service test', () => {
     });
 
     try {
-      await powerPlantsService.predict(userId, powerPlantId);
+      await powerPlantsService.predict(powerPlantId);
     } catch (e) {
       expect(e.message).toBe('Could not retrieve data for forecasts');
     }
@@ -287,7 +286,28 @@ describe('power-plants service test', () => {
       power: 100,
     });
 
-    const result = await powerPlantsService.predict(userId, powerPlantId);
+    const result = await powerPlantsService.predict(powerPlantId);
     expect(result[0].power).toBe(100);
+  });
+
+  it('should calculate power plant production for this month', async () => {
+    jest
+      .spyOn(powerPlantsService, 'history')
+      .mockResolvedValueOnce([
+        { predictedPower: 100 },
+        { predictedPower: 100 },
+      ] as HistoricalData[]);
+
+    const powerPlant = await powerPlantsService.create(
+      userId,
+      'test',
+      powerPlantData,
+    );
+    const powerPlantId = powerPlant._id.toString();
+
+    const res = await powerPlantsService.getProduction(powerPlantId);
+    expect(res.powerPlantId).toBe(powerPlantId);
+    expect(res.production).toBe(200);
+    expect(res.email).toBe(userMail);
   });
 });
