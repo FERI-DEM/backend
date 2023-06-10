@@ -29,6 +29,7 @@ import { Statistics } from './types';
 import { getRangeForBefore, getRangeForNow } from './utils/statistics';
 import settings from '../../app.settings';
 import { Env } from '../../common/constants/env.constants';
+import { formatDateTo15minInterval } from '../../common/utils';
 
 // TODO: maybe user can change calibration if he enters wrong number
 
@@ -45,6 +46,16 @@ export class PowerPlantsService {
   async saveHistoricalData(): Promise<void> {
     const powerPlants: { _id: string; powerPlants: PowerPlant[] }[] =
       await this.findAll();
+
+    const date = formatDateTo15minInterval(new Date());
+    const history = await getHistoricalData(
+      this.cassandraClient,
+      [
+        ...powerPlants.map((x) => x.powerPlants.map((y) => y._id.toString())),
+      ].flat(),
+      date,
+      date,
+    );
 
     const arr: HistoricalData[] = [];
 
@@ -68,13 +79,18 @@ export class PowerPlantsService {
         }
 
         // check if in array is powerPlantId and timestamp already
-        const index = arr.findIndex(
+        const isInDBHistory = (history ?? [])?.some(
+          (a) =>
+            a.powerPlantId === _id.toString() &&
+            a.timestamp === new Date(weather.timestamp).getTime(),
+        );
+        const isInCurrentHistory = arr?.some(
           (a) =>
             a.powerPlantId === _id.toString() &&
             a.timestamp === new Date(weather.timestamp).getTime(),
         );
 
-        if (index !== -1) {
+        if (!isInDBHistory && !isInCurrentHistory) {
           arr.push({
             powerPlantId: _id.toString(),
             solar: weather.solar,
