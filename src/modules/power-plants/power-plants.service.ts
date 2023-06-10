@@ -49,13 +49,22 @@ export class PowerPlantsService {
       await this.findAll();
 
     const date = formatDateTo15minInterval(new Date());
-    const history = await getHistoricalData(
-      this.cassandraClient,
-      [
-        ...powerPlants.map((x) => x.powerPlants.map((y) => y._id.toString())),
-      ].flat(),
-      date,
-      date,
+    const history = await Promise.all(
+      powerPlants
+        .map((x) => {
+          if (x.powerPlants && x.powerPlants.length > 0) {
+            return x.powerPlants.map((y) =>
+              getHistoricalData(
+                this.cassandraClient,
+                [y._id.toString()].flat(),
+                date,
+                date,
+              ),
+            );
+          }
+          return Promise.resolve([]);
+        })
+        .flat(),
     );
 
     const arr: HistoricalData[] = [];
@@ -79,7 +88,7 @@ export class PowerPlantsService {
         }
 
         // check if in array is powerPlantId and timestamp already
-        const isInDBHistory = (history ?? [])?.some(
+        const isInDBHistory = (history?.flat() ?? [])?.some(
           (a) =>
             a.powerPlantId === _id.toString() &&
             a.timestamp === new Date(weather.timestamp).getTime(),
