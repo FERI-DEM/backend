@@ -18,7 +18,7 @@ export const formatDateToNearestHour = (date: Date): string => {
   return date.toISOString();
 };
 
-export const formatDateTo15minInterval = (date: Date): string => {
+export const formatDateTo15minInterval = (date: Date): Date => {
   const minutes = date.getMinutes();
 
   let roundedMinutes: number;
@@ -38,7 +38,7 @@ export const formatDateTo15minInterval = (date: Date): string => {
   date.setMinutes(roundedMinutes);
   date.setSeconds(0);
   date.setMilliseconds(0);
-  return date.toISOString().slice(0, -8);
+  return date;
 };
 
 export const roundTimeUp = (date: Date, roundTo: number): Date => {
