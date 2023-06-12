@@ -20,6 +20,7 @@ export class ForecastsService {
     private readonly solarRadiationRep: SolarRadiationForecastRepository,
     private readonly bri: BrightSkyAPI,
     private readonly solcast: SolcastAPI,
+    private readonly forecast: OpenMeteoAPI,
   ) {}
 
   async getWeather(data: WeatherForecastDto): Promise<AxiosResponse> {
@@ -33,6 +34,10 @@ export class ForecastsService {
       const err = e as AxiosError;
       console.log(err.request);
     }
+  }
+
+  async getWeatherWidget(data: WeatherForecastDto) {
+    return await this.forecast.getWeatherForecastWidget(data.lat, data.lon);
   }
 
   async getSolarRadiation(data: SolarRadiationDto) {

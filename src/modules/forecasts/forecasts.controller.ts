@@ -22,6 +22,11 @@ export class ForecastsController {
     return await this.forecastsService.getWeather(dto);
   }
 
+  @Get('weather/:lat/:lon/widget')
+  async getWeatherWidget(@Param() dto: WeatherForecastDto) {
+    return await this.forecastsService.getWeatherWidget(dto);
+  }
+
   @Get('solar-radiation/:lat/:lon')
   async getSolarRadiation(@Param() dto: SolarRadiationDto) {
     return await this.forecastsService.getSolarRadiation(dto);
