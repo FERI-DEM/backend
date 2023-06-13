@@ -286,7 +286,7 @@ export class PowerPlantsService {
     );
   }
 
-  async predictByDays(powerPlantId: string) {
+  async predictByDays(powerPlantId: string): Promise<number[]> {
     const predictions = await this.predict(powerPlantId);
 
     const sumByDay = predictions.reduce(

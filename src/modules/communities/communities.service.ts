@@ -502,4 +502,25 @@ export class CommunitiesService {
       production: productionSum,
     };
   }
+
+  async predictByDays(communityId: string) {
+    const community = await this.findById(communityId);
+    const powerPlants = community.powerPlantIds;
+
+    const predictions = await Promise.all(
+      powerPlants.map((powerPlantId) =>
+        this.powerPlantsService.predictByDays(powerPlantId),
+      ),
+    );
+
+    const result = [];
+    for (let i = 0; i < predictions[0].length; i++) {
+      let sum = 0;
+      for (let j = 0; j < predictions.length; j++) {
+        sum += predictions[j][i];
+      }
+      result.push(sum);
+    }
+    return result;
+  }
 }
