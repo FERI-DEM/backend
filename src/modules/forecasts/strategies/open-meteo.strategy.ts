@@ -12,7 +12,7 @@ import {
 } from './get-weather-widget.interface';
 
 import * as fs from 'fs/promises';
-import { addDescToData } from 'src/common/utils/wmo.convert';
+import { addDescToData } from '../../../common/utils';
 
 interface MinutelyData {
   time: string[];
