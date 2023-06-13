@@ -63,7 +63,7 @@ export abstract class EntityRepository<T extends Document> {
     return await this.entityModel.collection.drop();
   }
 
-  async deleteAll() {
+  async deleteAll(): Promise<unknown> {
     if (settings.environment !== Env.TEST) {
       throw new Error(
         'Cannot delete all documents outside of test environment',
