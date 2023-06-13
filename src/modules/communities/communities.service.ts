@@ -109,10 +109,11 @@ export class CommunitiesService {
     const communityResult = await this.communityRepository.findByIdWithLookup(
       id,
     );
-    if (!communityResult && communityResult.length === 0) {
+    if (!communityResult || communityResult.length === 0) {
       throw new NotFoundException('Community not found');
     }
     const community = communityResult[0];
+
     const sum = community.members.reduce((partialSum, member) => {
       return partialSum + member.calibration.value;
     }, 0);
@@ -387,6 +388,7 @@ export class CommunitiesService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    console.log(powerPlants, memberId, communityId, adminId);
 
     const isMember = await this.isMemberOfAdminsCommunity(
       memberId,
