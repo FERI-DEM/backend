@@ -6,6 +6,14 @@ export interface WeatherWidget {
   sunset: string;
 }
 
-export interface GetWeatherForecastWidgetInterface {
-  getWeatherForecastWidget(lat: number, lon: number): Promise<WeatherWidget[]>;
+export interface WeatherWidgetFull extends WeatherWidget {
+  description: string;
+  image: string;
+}
+
+export interface GetWeatherForecastWidgetFullInterface {
+  getWeatherForecastWidget(
+    lat: number,
+    lon: number,
+  ): Promise<WeatherWidgetFull[]>;
 }

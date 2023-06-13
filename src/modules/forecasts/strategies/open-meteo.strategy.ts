@@ -6,7 +6,10 @@ import {
 } from './get-solar-radiation.interface';
 import { AxiosResponse } from 'axios';
 import { formatDateTo15minInterval } from '../../../common/utils';
-import { WeatherWidget } from './get-weather-widget.interface';
+import {
+  WeatherWidget,
+  WeatherWidgetFull,
+} from './get-weather-widget.interface';
 
 import * as fs from 'fs/promises';
 import { addDescToData } from 'src/common/utils/wmo.convert';
@@ -104,7 +107,7 @@ export class OpenMeteoAPI implements GetSolarRadiationInterface {
   async getWeatherForecastWidget(
     lat: number,
     lon: number,
-  ): Promise<WeatherWidget[]> {
+  ): Promise<WeatherWidgetFull[]> {
     const fileData = await fs.readFile('./src/assets/wmo/wmo.json', 'utf8');
     if (!fileData) {
       throw new Error('File not found');

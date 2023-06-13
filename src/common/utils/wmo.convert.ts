@@ -1,5 +1,8 @@
 import { WeatherCodeMapping } from '../types/weather.code.types';
-import { WeatherWidget } from 'src/modules/forecasts/strategies/get-weather-widget.interface';
+import {
+  WeatherWidget,
+  WeatherWidgetFull,
+} from 'src/modules/forecasts/strategies/get-weather-widget.interface';
 
 export const addDescToStatusCode = (
   statusCode: number,
@@ -26,10 +29,17 @@ export const addImageToStatusCode = (
 export const addDescToData = (
   weatherWidget: WeatherWidget[],
   wmo: WeatherCodeMapping,
-): WeatherWidget[] => {
-  return weatherWidget.map((widget) => {
-      widget.description = addDescToStatusCode(widget.weathercode, wmo);
-widget.image = addImageToStatusCode(widget.weathercode, wmo);
-        return widget;
-    });
+): WeatherWidgetFull[] => {
+  const weatherWidgetFull: WeatherWidgetFull[] = weatherWidget.map(
+    (weatherWidget: WeatherWidget) => {
+      const weatherWidgetFull: WeatherWidgetFull = {
+        ...weatherWidget,
+        description: addDescToStatusCode(weatherWidget.weathercode, wmo),
+        image: addImageToStatusCode(weatherWidget.weathercode, wmo),
+      };
+      return weatherWidgetFull;
+    },
+  );
+
+  return weatherWidgetFull;
 };
