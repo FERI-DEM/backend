@@ -25,14 +25,15 @@ describe('power-plants service test', () => {
     userId: string;
 
   const userMail = faker.internet.email();
-
+  const nextHour = new Date();
+  nextHour.setHours(nextHour.getHours() + 1);
   const forecastServiceMock = {
     getCurrentSolarRadiation: jest.fn().mockResolvedValue({
       solar: 100,
     }),
     getSolarRadiationForecast: jest
       .fn()
-      .mockResolvedValue([{ solar: 100, timestamp: new Date() }]),
+      .mockResolvedValue([{ solar: 100, timestamp: nextHour }]),
   } as unknown as jest.Mocked<
     Pick<OpenMeteoAPI, 'getCurrentSolarRadiation' | 'getSolarRadiationForecast'>
   >;

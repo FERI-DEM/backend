@@ -308,7 +308,7 @@ export class PowerPlantsService {
 
   async predict(
     powerPlantId: string,
-    timezoneOffset: number | undefined = 0,
+    timezoneOffset = 0,
   ): Promise<{ date: string; power: number }[]> {
     const { powerPlants } = await this.powerPlantRepository.findById(
       powerPlantId,
@@ -355,14 +355,15 @@ export class PowerPlantsService {
     const roundedTimestamp = new Date(roundedDate.toISOString()).getTime();
 
     return forecasts.flatMap((f) => {
-      const timestamp = new Date(f.timestamp + ':00.000Z');
-      if (timestamp.getTime() < roundedTimestamp) return [];
+      const timestamp = new Date(f.timestamp).getTime();
+      if (timestamp < roundedTimestamp) return [];
       const predictedPower = f.solar * coefficient;
+      const date = new Date(
+        timestamp + timezoneOffset * 60 * 60 * 1000,
+      ).toISOString();
       return [
         {
-          date: new Date(
-            timestamp.getTime() + timezoneOffset * 60 * 60 * 1000,
-          ).toISOString(),
+          date: date,
           power: predictedPower,
         },
       ];
