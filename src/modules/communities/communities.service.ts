@@ -131,6 +131,18 @@ export class CommunitiesService {
       userId: new mongoose.Types.ObjectId(data.adminId),
     }));
 
+    const found = await this.communityRepository.findAll({
+      adminId: data.adminId,
+      name: data.name,
+    });
+
+    if (found.length > 0) {
+      throw new HttpException(
+        'You already have a community with this name',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     const org = await this.communityRepository.create({
       ...data,
       members,
@@ -141,6 +153,7 @@ export class CommunitiesService {
         'Cloud not create community',
         HttpStatus.BAD_REQUEST,
       );
+
     await this.usersService.addRole(data.adminId, Role.COMMUNITY_ADMIN);
     return org;
   }
