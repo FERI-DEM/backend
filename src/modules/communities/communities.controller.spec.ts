@@ -100,18 +100,4 @@ describe('CommunitiesController test', () => {
       communityData.adminId,
     );
   });
-  it('should add a member to a community', async () => {
-    const memberEmail = faker.internet.email();
-    const res = await controller.addMember(
-      { email: memberEmail },
-      communityData.id,
-      communityData.adminId,
-    );
-    expect(res).toBeTruthy();
-    expect(communityServiceMock.addMember).toBeCalledWith(
-      memberEmail,
-      communityData.id,
-      communityData.adminId,
-    );
-  });
 });

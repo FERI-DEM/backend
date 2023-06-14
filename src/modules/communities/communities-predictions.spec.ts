@@ -67,7 +67,9 @@ describe('communities predictions test', () => {
     jest
       .spyOn(firebaseService.auth, 'setCustomUserClaims')
       .mockImplementation(() => Promise.resolve());
+  });
 
+  beforeEach(async () => {
     const adminId = (
       await userService.create({
         email: faker.internet.email(),
