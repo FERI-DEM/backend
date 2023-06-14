@@ -59,16 +59,6 @@ export class CommunitiesController {
   }
 
   @Roles(Role.COMMUNITY_ADMIN)
-  @Patch('invite/:communityId')
-  async addMember(
-    @Body() { email }: AddMemberDto,
-    @Param('communityId') communityId: string,
-    @User('id') adminId: string,
-  ) {
-    return await this.communitiesService.addMember(email, communityId, adminId);
-  }
-
-  @Roles(Role.COMMUNITY_ADMIN)
   @Delete('remove/:communityId/:memberId')
   async removePowerPlants(
     @Param('memberId') memberId: string,

@@ -7,14 +7,8 @@ export class Community {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: [String] })
-  membersIds: string[];
-
   @Prop({ type: [MemberSchema], default: [] })
   members: Member[];
-
-  @Prop({ type: [String], default: [] })
-  powerPlantIds: string[];
 
   @Prop({ type: String, required: true })
   adminId: string;

@@ -34,7 +34,7 @@ export class CommunitiesService {
     const community = await this.communityRepository.findOne({
       _id: communityId,
       adminId,
-      membersIds: { $in: [memberId] },
+      'members.userId': memberId,
     });
 
     return !!community;
@@ -86,7 +86,7 @@ export class CommunitiesService {
   async findByUser(userId: string): Promise<CommunityDocument[]> {
     try {
       return await this.communityRepository.findAll({
-        membersIds: { $in: [userId] },
+        'members.userId': userId,
       });
     } catch (e) {
       throw new BadRequestException(e);
@@ -97,7 +97,7 @@ export class CommunitiesService {
     const communityResult = await this.communityRepository.findByIdWithLookup(
       id,
     );
-    if (!communityResult && communityResult.length === 0) {
+    if (!communityResult || communityResult.length === 0) {
       throw new NotFoundException('Community not found');
     }
     return communityResult[0];
@@ -146,7 +146,6 @@ export class CommunitiesService {
     const org = await this.communityRepository.create({
       ...data,
       members,
-      membersIds: [data.adminId],
     });
     if (!org)
       throw new HttpException(
@@ -156,50 +155,6 @@ export class CommunitiesService {
 
     await this.usersService.addRole(data.adminId, Role.COMMUNITY_ADMIN);
     return org;
-  }
-
-  async addMember(
-    email: string,
-    communityId: string,
-    adminId: string,
-  ): Promise<boolean> {
-    const isAdmin = await this.isCommunityAdmin(communityId, adminId);
-
-    if (!isAdmin) {
-      throw new HttpException(
-        'You can not add member to this community',
-        HttpStatus.PRECONDITION_FAILED,
-      );
-    }
-
-    const member = await this.usersService.findByEmail(email);
-    if (!member) {
-      throw new HttpException('Member not found', HttpStatus.BAD_REQUEST);
-    }
-
-    const memberId = member._id;
-
-    // check if member already in this community
-    const community = await this.communityRepository.findOne({
-      _id: communityId,
-      membersIds: { $in: [memberId] },
-    });
-
-    if (community) {
-      throw new HttpException(
-        'Member already in community',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    await this.communityRepository.findOneAndUpdate(
-      { _id: communityId },
-      { $push: { membersIds: memberId } },
-    );
-
-    await this.usersService.addRole(memberId, Role.COMMUNITY_MEMBER);
-
-    return true;
   }
 
   async delete(communityId: string, adminId: string): Promise<boolean> {
@@ -214,10 +169,13 @@ export class CommunitiesService {
 
     // could be slow
     await Promise.all(
-      deleteCommunity.membersIds.map(async (memberId) => {
-        const memberCommunities = await this.findByUser(memberId);
+      deleteCommunity.members.map(async (member) => {
+        const memberCommunities = await this.findByUser(member.userId);
         if (memberCommunities.length === 0) {
-          return this.usersService.removeRole(memberId, Role.COMMUNITY_MEMBER);
+          return this.usersService.removeRole(
+            member.userId,
+            Role.COMMUNITY_MEMBER,
+          );
         }
         return null;
       }),
@@ -239,7 +197,7 @@ export class CommunitiesService {
 
     const community = await this.communityRepository.findOne({
       _id: communityId,
-      membersIds: { $in: [memberId] },
+      'members.userId': memberId,
     });
 
     if (!community) {
@@ -256,13 +214,16 @@ export class CommunitiesService {
       );
     }
 
-    await this.communityRepository.findOneAndUpdate(
-      { _id: communityId },
-      {
-        $pull: { membersIds: memberId },
-        $pullAll: { powerPlantIds: powerPlants },
-      },
-    );
+    for (const powerPlantId of powerPlants) {
+      await this.communityRepository.findOneAndUpdate(
+        { _id: communityId },
+        {
+          $pull: {
+            members: { userId: memberId, powerPlantId: powerPlantId },
+          },
+        },
+      );
+    }
 
     const memberCommunities = await this.findByUser(memberId);
 
@@ -367,22 +328,28 @@ export class CommunitiesService {
     }
 
     // check if some of powerPlantsIds are already in this community  powerPlantIds
-    const community = await this.communityRepository.findOne({
-      _id: communityId,
-      powerPlantIds: { $in: powerPlants },
-    });
+    for (const powerPlantId of powerPlants) {
+      const community = await this.communityRepository.findOne({
+        _id: communityId,
+        'members.powerPlantId': powerPlantId,
+      });
 
-    if (community) {
-      throw new HttpException(
-        'Power plant is already in community',
-        HttpStatus.BAD_REQUEST,
-      );
+      if (community) {
+        throw new HttpException(
+          'Power plant is already in community',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
-    await this.communityRepository.findOneAndUpdate(
-      { _id: communityId },
-      { $push: { powerPlantIds: powerPlants } },
-    );
+    for (const powerPlantId of powerPlants) {
+      await this.communityRepository.findOneAndUpdate(
+        { _id: communityId },
+        {
+          $push: { members: { userId: memberId, powerPlantId: powerPlantId } },
+        },
+      );
+    }
 
     await this.usersService.addRole(memberId, Role.COMMUNITY_MEMBER);
 
@@ -401,7 +368,6 @@ export class CommunitiesService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    console.log(powerPlants, memberId, communityId, adminId);
 
     const isMember = await this.isMemberOfAdminsCommunity(
       memberId,
@@ -420,16 +386,20 @@ export class CommunitiesService {
       powerPlantId: string,
       community: CommunityDocument,
     ): boolean => {
-      return community.powerPlantIds.some((p) => p === powerPlantId);
+      return community.members.some((p) => p.powerPlantId === powerPlantId);
     };
 
-    // TODO do i need to remove member from community if he has no power plants in it ?
-    await this.communityRepository.findOneAndUpdate(
-      { _id: communityId },
-      {
-        $pullAll: { powerPlantIds: powerPlants },
-      },
-    );
+    for (const powerPlantId of powerPlants) {
+      // TODO do i need to remove member from community if he has no power plants in it ?
+      await this.communityRepository.findOneAndUpdate(
+        { _id: communityId },
+        {
+          $pull: {
+            members: { userId: memberId, powerPlantId: powerPlantId },
+          },
+        },
+      );
+    }
 
     const memberCommunities = await this.findByUser(memberId);
     const { powerPlants: memberPowerPlants } =
@@ -462,7 +432,7 @@ export class CommunitiesService {
 
   async predict(communityId: string) {
     const community = await this.findById(communityId);
-    const powerPlants = community.powerPlantIds;
+    const powerPlants = community.members.map((m) => m.powerPlantId);
 
     const predictions = (
       await Promise.all(
@@ -495,7 +465,7 @@ export class CommunitiesService {
 
   async getCommunityPowerProduction(communityId: string) {
     const community = await this.findById(communityId);
-    const powerPlants = community.powerPlantIds;
+    const powerPlants = community.members.map((m) => m.powerPlantId);
 
     const production = await Promise.all(
       powerPlants.map((powerPlantId) =>

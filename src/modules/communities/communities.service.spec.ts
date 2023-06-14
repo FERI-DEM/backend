@@ -108,39 +108,11 @@ describe('CommunitiesService test', () => {
     expect(notificationService).toBeDefined();
   });
 
-  it("should return true if member is in admins' community", async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [adminId],
-    });
-    const isMember = await communitiesService.isMemberOfAdminsCommunity(
-      adminId,
-      community.id,
-      adminId,
-    );
-    expect(isMember).toBeTruthy();
-  });
-
-  it("should return false if member is not in admins' community", async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [adminId],
-    });
-    const isMember = await communitiesService.isMemberOfAdminsCommunity(
-      userId,
-      community.id,
-      adminId,
-    );
-    expect(isMember).toBeFalsy();
-  });
-
   it('should return true if user is community admin', async () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId],
+      members: [{ userId: adminId, powerPlantId: '' }],
     });
     const isAdmin = await communitiesService.isCommunityAdmin(
       community.id,
@@ -153,7 +125,7 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId],
+      members: [{ userId: adminId, powerPlantId: '' }],
     });
     const isAdmin = await communitiesService.isCommunityAdmin(
       community.id,
@@ -162,77 +134,6 @@ describe('CommunitiesService test', () => {
     expect(isAdmin).toBeFalsy();
   });
 
-  it('should add a member to a community', async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [adminId],
-    });
-
-    const success = await communitiesService.addMember(
-      memberEmail,
-      community.id,
-      adminId,
-    );
-    const member = await userRepository.findById(memberId);
-    expect(member.roles.includes(Role.COMMUNITY_MEMBER)).toBeTruthy();
-    expect(success).toBeTruthy();
-  });
-
-  it('should fail to add a member to a community because user is not admin', async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [adminId],
-    });
-
-    try {
-      await communitiesService.addMember(memberId, community.id, userId);
-    } catch (e) {
-      expect(e.message).toBe('You can not add member to this community');
-    }
-  });
-  it("should fail to add a member to a community because member doesn't exist", async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [adminId],
-    });
-
-    try {
-      await communitiesService.addMember(
-        faker.database.mongodbObjectId(),
-        community.id,
-        adminId,
-      );
-    } catch (e) {
-      expect(e.message).toBe('Member not found');
-    }
-  });
-  it('should fail to add a member to a community because member is already a member', async () => {
-    const community = await communitiesRepository.create({
-      name: 'test',
-      adminId,
-      membersIds: [adminId, memberId],
-    });
-
-    try {
-      await communitiesService.addMember(memberEmail, community.id, adminId);
-    } catch (e) {
-      expect(e.message).toBe('Member already in community');
-    }
-  });
-  it('should fail to add a member to a community because community does not exist', async () => {
-    try {
-      await communitiesService.addMember(
-        memberId,
-        faker.database.mongodbObjectId(),
-        adminId,
-      );
-    } catch (e) {
-      expect(e.message).toBe('You can not add member to this community');
-    }
-  });
   it('should remove a member from community', async () => {
     const powerPlant = await powerPlantsService.create(
       memberId,
@@ -245,8 +146,10 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId, memberId],
-      powerPlantsIds: [powerPlantId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: powerPlantId },
+      ],
     });
 
     const success = await communitiesService.removePowerPlants(
@@ -257,7 +160,7 @@ describe('CommunitiesService test', () => {
     );
     const member = await userRepository.findById(memberId);
     const updateCom = await communitiesRepository.findById(community.id);
-    expect(updateCom.powerPlantIds.length).toBe(0);
+    expect(updateCom.members.length).toBe(1);
     expect(member.roles.includes(Role.POWER_PLANT_OWNER)).toBeTruthy();
     expect(success).toBeTruthy();
   });
@@ -265,7 +168,10 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId, memberId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: '' },
+      ],
     });
 
     try {
@@ -283,7 +189,10 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId, memberId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: '' },
+      ],
     });
 
     try {
@@ -309,22 +218,31 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId, memberId],
-      powerPlantsIds: [powerPlantId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: powerPlantId },
+      ],
     });
 
-    const success = await communitiesService.leave([], memberId, community.id);
+    const success = await communitiesService.leave(
+      [powerPlantId],
+      memberId,
+      community.id,
+    );
     const member = await userRepository.findById(memberId);
     const updateCom = await communitiesRepository.findById(community.id);
     expect(member.roles.includes(Role.POWER_PLANT_OWNER)).toBeTruthy();
     expect(success).toBeTruthy();
-    expect(updateCom.powerPlantIds.length).toBe(0);
+    expect(updateCom.members.length).toBe(1);
   });
   it('should fail to remove a member from community because member is not a member of this community', async () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId, memberId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: '' },
+      ],
     });
 
     try {
@@ -337,7 +255,10 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId, memberId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: '' },
+      ],
     });
 
     try {
@@ -350,7 +271,10 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId, memberId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: '' },
+      ],
     });
 
     const success = await communitiesService.delete(community.id, adminId);
@@ -364,7 +288,10 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId, memberId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: '' },
+      ],
     });
 
     try {
@@ -382,15 +309,21 @@ describe('CommunitiesService test', () => {
   });
   it('should find community by userId', async () => {
     await communitiesRepository.create({
-      name: 'test',
+      name: 'test1',
       adminId,
-      membersIds: [adminId, memberId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: '' },
+      ],
     });
 
     await communitiesRepository.create({
-      name: 'test',
+      name: 'tes2t',
       adminId,
-      membersIds: [adminId, memberId],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: '' },
+      ],
     });
 
     const foundCommunity = await communitiesService.findByUser(memberId);
@@ -405,7 +338,7 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId],
+      members: [{ userId: adminId, powerPlantId: '' }],
     });
 
     const reqUser = {
@@ -434,7 +367,7 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId],
+      members: [{ userId: adminId, powerPlantId: '' }],
     });
 
     const reqUser = {
@@ -494,7 +427,7 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId],
+      members: [{ userId: adminId, powerPlantId: '' }],
     });
 
     const newUserFirebaseId = 'test3';
@@ -543,8 +476,8 @@ describe('CommunitiesService test', () => {
     });
 
     const updatedCommunity = await communitiesRepository.findById(community.id);
-    const isPowerPlantInCommunity = updatedCommunity.powerPlantIds.includes(
-      powerPlant._id.toString(),
+    const isPowerPlantInCommunity = updatedCommunity.members.some(
+      (member) => member.powerPlantId === powerPlant._id.toString(),
     );
 
     const updatedUser = await userRepository.findById(newUserId);
@@ -574,8 +507,10 @@ describe('CommunitiesService test', () => {
     const community = await communitiesRepository.create({
       name: 'test',
       adminId,
-      membersIds: [adminId, newUserId],
-      powerPlantIds: [powerPlant._id.toString()],
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: newUserId, powerPlantId: powerPlant._id.toString() },
+      ],
     });
 
     const res = await communitiesService.removePowerPlants(
@@ -588,9 +523,26 @@ describe('CommunitiesService test', () => {
     expect(res).toBeTruthy();
 
     const updatedCommunity = await communitiesRepository.findById(community.id);
-    const isPowerPlantInCommunity = updatedCommunity.powerPlantIds.includes(
-      powerPlant._id.toString(),
+    const isPowerPlantInCommunity = updatedCommunity.members.some(
+      (member) => member.powerPlantId === powerPlant._id.toString(),
     );
     expect(isPowerPlantInCommunity).toBeFalsy();
+  });
+  it('should be member of admins community', async () => {
+    const community = await communitiesRepository.create({
+      name: 'test',
+      adminId,
+      members: [
+        { userId: adminId, powerPlantId: '' },
+        { userId: memberId, powerPlantId: '' },
+      ],
+    });
+
+    const isMember = await communitiesService.isMemberOfAdminsCommunity(
+      memberId,
+      community.id,
+      adminId,
+    );
+    expect(isMember).toBeTruthy();
   });
 });
