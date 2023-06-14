@@ -518,11 +518,10 @@ export class CommunitiesService {
 
   async predictByDays(communityId: string) {
     const community = await this.findById(communityId);
-    const powerPlants = community.powerPlantIds;
 
     const predictions = await Promise.all(
-      powerPlants.map((powerPlantId) =>
-        this.powerPlantsService.predictByDays(powerPlantId),
+      community.members.map((member) =>
+        this.powerPlantsService.predictByDays(member.powerPlantId),
       ),
     );
 
