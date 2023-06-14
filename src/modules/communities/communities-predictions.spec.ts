@@ -67,6 +67,15 @@ describe('communities predictions test', () => {
     jest
       .spyOn(firebaseService.auth, 'setCustomUserClaims')
       .mockImplementation(() => Promise.resolve());
+    jest.spyOn(powerPlantsService, 'getProduction').mockImplementation(() => {
+      return Promise.resolve({
+        from: new Date(),
+        to: new Date(),
+        production: 100,
+        powerPlantId: powerPlantId,
+        email: faker.internet.email(),
+      });
+    });
   });
 
   beforeEach(async () => {
@@ -131,5 +140,21 @@ describe('communities predictions test', () => {
     expect(pred).toBeDefined();
     expect(pred.length).toEqual(1);
     expect(pred[0].power).toEqual(100);
+  });
+  it('should return community prediction by days', async () => {
+    await powerPlantsService.calibrate(userId, powerPlantId, { power: 100 });
+    const pred = await communitiesService.predictByDays(communityId);
+    expect(pred).toBeDefined();
+    expect(pred.length).toEqual(1);
+    expect(pred[0]).toEqual(25);
+  });
+  it('should return community power production', async () => {
+    await powerPlantsService.calibrate(userId, powerPlantId, { power: 100 });
+    const production = await communitiesService.getCommunityPowerProduction(
+      communityId,
+    );
+    expect(production).toBeDefined();
+    expect(production.powerPlants.length).toEqual(1);
+    expect(production.production).toEqual(100);
   });
 });
