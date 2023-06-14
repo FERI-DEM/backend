@@ -7,7 +7,7 @@ import { retryOnFailure } from './utils';
 export class CronService {
   constructor(private readonly service: PowerPlantsService) {}
 
-  @Cron('* */15 * * * *')
+  @Cron('0 */15 * * * *')
   async collectPowerPlantData() {
     await retryOnFailure<void>(
       async () => await this.service.saveHistoricalData(),
