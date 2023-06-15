@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   CreateCommunityDto,
   RequestToJoinDto,
@@ -91,6 +91,12 @@ export class CommunitiesController {
     @User('id') adminId: string,
   ) {
     return await this.communitiesService.delete(communityId, adminId);
+  }
+
+  @Get('search')
+  @ApiQuery({ name: 'name', required: true })
+  async search(@Query('name') name: string) {
+    return await this.communitiesService.findByName(name);
   }
 
   @Roles(Role.COMMUNITY_MEMBER)

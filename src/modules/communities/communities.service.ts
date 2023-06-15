@@ -98,6 +98,12 @@ export class CommunitiesService {
     );
   }
 
+  async findByName(name: string) {
+    return await this.communityRepository.findAll({
+      name: new RegExp(`^${name}$`, 'i'),
+    });
+  }
+
   async findByUser(userId: string): Promise<CommunityDocument[]> {
     try {
       return await this.communityRepository.findAll({
