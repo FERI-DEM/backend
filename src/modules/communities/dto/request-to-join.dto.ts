@@ -4,7 +4,7 @@ import { ArrayMinSize, IsArray, IsString } from 'class-validator';
 export class RequestToJoinDto {
   @ApiProperty()
   @IsString()
-  communityId: string;
+  community: string;
 
   @ApiProperty()
   @IsArray()

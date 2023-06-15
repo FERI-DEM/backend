@@ -253,7 +253,7 @@ export class CommunitiesService {
     const { id: userId, userId: userFirebaseId } = data.user;
 
     const community = await this.communityRepository.findOne({
-      _id: data.communityId,
+      name: data.community,
     });
 
     if (!community) {
@@ -285,7 +285,7 @@ export class CommunitiesService {
       receiverId: adminFirebaseId,
       senderId: userFirebaseId,
       data: {
-        communityId: data.communityId,
+        communityId: community._id.toString(),
         userId: userFirebaseId,
         powerPlants: data.powerPlants,
         message: `User with email ${user.email} wants to join your ${community.name} community with ${data.powerPlants.length} power plants`,

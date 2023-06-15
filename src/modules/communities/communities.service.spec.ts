@@ -358,7 +358,7 @@ describe('CommunitiesService test', () => {
 
     const res = await communitiesService.requestToJoin({
       user: reqUser,
-      communityId: community.id,
+      community: community.name,
       powerPlants: [powerPlantId],
     });
     expect(res.status).toEqual('ok');
@@ -389,7 +389,7 @@ describe('CommunitiesService test', () => {
     try {
       await communitiesService.requestToJoin({
         user: reqUser,
-        communityId: community.id,
+        community: community.name,
         powerPlants: [powerPlantId],
       });
     } catch (e) {

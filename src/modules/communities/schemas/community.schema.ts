@@ -4,7 +4,7 @@ import { Member, MemberSchema } from './member.schema';
 
 @Schema({ timestamps: true, collection: 'communities' })
 export class Community {
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, unique: true })
   name: string;
 
   @Prop({ type: [MemberSchema], default: [] })
