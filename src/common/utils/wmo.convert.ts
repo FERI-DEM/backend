@@ -36,6 +36,12 @@ export const addDescToData = (
         ...weatherWidget,
         description: addDescToStatusCode(weatherWidget.weathercode, wmo),
         image: addImageToStatusCode(weatherWidget.weathercode, wmo),
+        descriptionHourly: weatherWidget.hourly.weathercode.map(
+          (weathercode: number) => addDescToStatusCode(weathercode, wmo),
+        ),
+        imageHourly: weatherWidget.hourly.weathercode.map(
+          (weathercode: number) => addImageToStatusCode(weathercode, wmo),
+        ),
       };
       return weatherWidgetFull;
     },
