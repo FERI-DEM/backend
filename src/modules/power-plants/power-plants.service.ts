@@ -415,6 +415,7 @@ export class PowerPlantsService {
 
     if (!currPrediction) {
       return {
+        email: powerPlant.email,
         userId: powerPlant._id,
         powerPlantId: powerPlant.powerPlants[0]._id,
         displayName: powerPlant.powerPlants[0].displayName,
@@ -423,6 +424,7 @@ export class PowerPlantsService {
     }
 
     return {
+      email: powerPlant.email,
       userId: powerPlant._id,
       powerPlantId: powerPlant.powerPlants[0]._id,
       displayName: powerPlant.powerPlants[0].displayName,

@@ -104,12 +104,12 @@ export class CommunitiesService {
     });
   }
 
-  async findByUser(userId: string): Promise<any> {
+  async findByUser(userId: string): Promise<CommunityDocument[]> {
     try {
       return await this.communityRepository.findAll({
         $or: [
-          { adminId: userId },
           { 'members.userId': new mongoose.Types.ObjectId(userId) },
+          { adminId: userId },
         ],
       });
     } catch (e) {
