@@ -86,7 +86,7 @@ export class CommunitiesService {
   async findByUser(userId: string): Promise<CommunityDocument[]> {
     try {
       return await this.communityRepository.findAll({
-        'members.userId': userId,
+        $or: [{ 'members.userId': userId }, { adminId: userId }],
       });
     } catch (e) {
       throw new BadRequestException(e);

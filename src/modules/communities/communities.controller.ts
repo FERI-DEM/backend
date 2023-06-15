@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AddMemberDto, CreateCommunityDto, RequestToJoinDto } from './dto';
+import { CreateCommunityDto, RequestToJoinDto } from './dto';
 import { CommunitiesService } from './communities.service';
 import { Roles, User } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../auth/guards';
