@@ -32,6 +32,16 @@ interface MinutelyDataUnits {
   terrestrial_radiation: string;
 }
 
+export interface HourlyData {
+  time: string[];
+  weathercode: number[];
+}
+
+interface HourlyDataUnits {
+  time: string;
+  weathercode: number;
+}
+
 interface DailyData {
   time: string[];
   weathercode: number[];
@@ -70,6 +80,8 @@ export interface OpenMeteoDailyResponse {
   timezone: string;
   timezone_abbreviation: string;
   elevation: number;
+  hourly_units: HourlyDataUnits;
+  hourly: HourlyData;
   daily_units: DailyDataUnits;
   daily: DailyData;
 }
@@ -115,17 +127,22 @@ export class OpenMeteoAPI implements GetSolarRadiationInterface {
     const wmo = JSON.parse(fileData);
 
     const { data: response } = (await this.httpService.axiosRef.get(
-      `${this.baseUrl}latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=GMT`,
+      `${this.baseUrl}latitude=${lat}&longitude=${lon}&hourly=weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=GMT`,
     )) as AxiosResponse<OpenMeteoDailyResponse>;
 
-    const data = response.daily;
+    const hourlyData = response.hourly;
+    const dailyData = response.daily;
 
-    const weatherWidget: WeatherWidget[] = data.time.map((value, i) => ({
-      weathercode: data.weathercode[i],
-      temperature_2m_max: data.temperature_2m_max[i],
-      temperature_2m_min: data.temperature_2m_min[i],
-      sunrise: data.sunrise[i],
-      sunset: data.sunset[i],
+    const weatherWidget: WeatherWidget[] = dailyData.time.map((value, i) => ({
+      weathercode: dailyData.weathercode[i],
+      temperature_2m_max: dailyData.temperature_2m_max[i],
+      temperature_2m_min: dailyData.temperature_2m_min[i],
+      sunrise: dailyData.sunrise[i],
+      sunset: dailyData.sunset[i],
+      hourly: {
+        time: hourlyData.time,
+        weathercode: hourlyData.weathercode,
+      },
     }));
 
     const weatherWidgetWmo = addDescToData(weatherWidget, wmo);

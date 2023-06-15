@@ -38,7 +38,6 @@ export class CommunitiesService {
     const community = await this.communityRepository.findOne({
       _id: communityId,
       adminId,
-      'members.userId': memberId,
     });
 
     return !!community;
