@@ -29,6 +29,15 @@ import { Statistics } from '../power-plants/types';
 export class CommunitiesController {
   constructor(private readonly communitiesService: CommunitiesService) {}
 
+  @Roles(Role.COMMUNITY_ADMIN)
+  @Patch('process-request')
+  async processRequest(
+    @User('id') adminId: string,
+    @Body() dto: ProcessRequestDto,
+  ) {
+    return await this.communitiesService.processRequest({ ...dto, adminId });
+  }
+
   @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
   @Get('statistics/:id')
   async getStatistics(
@@ -119,15 +128,6 @@ export class CommunitiesController {
     @Body() dto: RequestToJoinDto,
   ) {
     return await this.communitiesService.requestToJoin({ ...dto, user });
-  }
-
-  @Roles(Role.COMMUNITY_ADMIN)
-  @Patch('process-request')
-  async processRequest(
-    @User('id') adminId: string,
-    @Body() dto: ProcessRequestDto,
-  ) {
-    return await this.communitiesService.processRequest({ ...dto, adminId });
   }
 
   @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
