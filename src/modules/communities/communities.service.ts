@@ -242,7 +242,10 @@ export class CommunitiesService {
         { _id: communityId },
         {
           $pull: {
-            members: { userId: memberId, powerPlantId: powerPlantId },
+            members: {
+              userId: new mongoose.Types.ObjectId(memberId),
+              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+            },
           },
         },
       );
@@ -425,7 +428,10 @@ export class CommunitiesService {
         { _id: communityId },
         {
           $pull: {
-            members: { userId: memberId, powerPlantId: powerPlantId },
+            members: {
+              userId: new mongoose.Types.ObjectId(memberId),
+              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+            },
           },
         },
       );
