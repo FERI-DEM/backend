@@ -404,4 +404,29 @@ export class PowerPlantsService {
       production: productionThisMonth,
     };
   }
+
+  async getCurrentProduction(powerPlantId: string, timezoneOffset = 0) {
+    const currTime = formatDateTo15minInterval(new Date());
+    const powerPlant = await this.powerPlantRepository.findById(powerPlantId);
+    const predictions = await this.predict(powerPlantId, timezoneOffset);
+    const currPrediction = predictions.find(
+      (p) => p.date === currTime.toISOString(),
+    );
+
+    if (!currPrediction) {
+      return {
+        userId: powerPlant._id,
+        powerPlantId: powerPlant.powerPlants[0]._id,
+        displayName: powerPlant.powerPlants[0].displayName,
+        production: predictions[0],
+      };
+    }
+
+    return {
+      userId: powerPlant._id,
+      powerPlantId: powerPlant.powerPlants[0]._id,
+      displayName: powerPlant.powerPlants[0].displayName,
+      production: currPrediction,
+    };
+  }
 }

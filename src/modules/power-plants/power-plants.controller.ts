@@ -123,4 +123,17 @@ export class PowerPlantsController {
   async delete(@Param('id') powerPlantId: string, @User('id') userId: string) {
     return await this.powerPlantService.delete(userId, powerPlantId);
   }
+
+  @Roles(Role.POWER_PLANT_OWNER)
+  @Get('production/:id')
+  async production(
+    @Param('id') powerPlantId: string,
+    @User('id') userId: string,
+    @Headers('TimezoneOffset') timezoneOffset?: number,
+  ) {
+    return await this.powerPlantService.getCurrentProduction(
+      powerPlantId,
+      timezoneOffset,
+    );
+  }
 }

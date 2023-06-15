@@ -43,7 +43,7 @@ export class PowerPlantRepository {
   async findById(id: string) {
     return this.model.findOne(
       { 'powerPlants._id': id },
-      { 'powerPlants.$': 1, email: 1 },
+      { 'powerPlants.$': 1, email: 1, _id: 1 },
     );
   }
 

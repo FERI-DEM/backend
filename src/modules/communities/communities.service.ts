@@ -529,4 +529,23 @@ export class CommunitiesService {
     }
     return result;
   }
+
+  async getCurrentProduction(communityId: string) {
+    const community = await this.findById(communityId);
+    const powerPlants = community.members.map((m) => m.powerPlantId.toString());
+    const currentProduction = await Promise.all(
+      powerPlants.map((powerPlantId) =>
+        this.powerPlantsService.getCurrentProduction(powerPlantId),
+      ),
+    );
+
+    let productionSum = 0;
+    for (let i = 0; i < currentProduction.length; i++) {
+      productionSum += currentProduction[i].production.power;
+    }
+    return {
+      powerPlants: currentProduction,
+      production: productionSum,
+    };
+  }
 }
