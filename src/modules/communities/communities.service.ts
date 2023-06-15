@@ -38,7 +38,7 @@ export class CommunitiesService {
     const community = await this.communityRepository.findOne({
       _id: communityId,
       adminId,
-      'members.userId': memberId,
+      'members.userId': new mongoose.Types.ObjectId(memberId),
     });
 
     return !!community;
@@ -221,7 +221,7 @@ export class CommunitiesService {
 
     const community = await this.communityRepository.findOne({
       _id: communityId,
-      'members.userId': memberId,
+      'members.userId': new mongoose.Types.ObjectId(memberId),
     });
 
     if (!community) {
