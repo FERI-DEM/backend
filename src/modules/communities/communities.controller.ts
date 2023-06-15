@@ -147,4 +147,10 @@ export class CommunitiesController {
   async getCommunityPredictByDays(@Param('id') id: string) {
     return await this.communitiesService.predictByDays(id);
   }
+
+  @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
+  @Get('current-production/:id')
+  async getCurrentProduction(@Param('id') id: string) {
+    return await this.communitiesService.getCurrentProduction(id);
+  }
 }
