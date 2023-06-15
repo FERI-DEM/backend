@@ -326,7 +326,7 @@ describe('CommunitiesService test', () => {
       ],
     });
 
-    const foundCommunity = await communitiesService.findByUser(memberId);
+    const foundCommunity = await communitiesService.findByUser(adminId);
     expect(foundCommunity.length).toEqual(2);
   });
   it('should find return empty array if user is not in anz community', async () => {
