@@ -377,9 +377,11 @@ export class PowerPlantsService {
   async getProduction(powerPlantId: string) {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
     const endOfMonth = new Date();
     endOfMonth.setMonth(endOfMonth.getMonth() + 1);
     endOfMonth.setDate(0);
+    endOfMonth.setHours(23, 59, 59, 999);
 
     const historicalData = await this.history(
       [powerPlantId],
