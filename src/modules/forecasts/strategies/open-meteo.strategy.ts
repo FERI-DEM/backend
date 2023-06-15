@@ -115,7 +115,7 @@ export class OpenMeteoAPI implements GetSolarRadiationInterface {
     const wmo = JSON.parse(fileData);
 
     const { data: response } = (await this.httpService.axiosRef.get(
-      `${this.baseUrl}latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Europe%2FLondon`,
+      `${this.baseUrl}latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=GMT`,
     )) as AxiosResponse<OpenMeteoDailyResponse>;
 
     const data = response.daily;
