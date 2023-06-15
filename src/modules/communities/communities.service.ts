@@ -465,7 +465,7 @@ export class CommunitiesService {
 
   async getCommunityPowerProduction(communityId: string) {
     const community = await this.findById(communityId);
-    const powerPlants = community.members.map((m) => m.powerPlantId);
+    const powerPlants = community.members.map((m) => m.powerPlantId.toString());
 
     const production = await Promise.all(
       powerPlants.map((powerPlantId) =>
