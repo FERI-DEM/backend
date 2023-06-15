@@ -5,7 +5,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateCommunityDto, RequestToJoinDto } from './dto';
+import {
+  CreateCommunityDto,
+  RequestToJoinDto,
+  UpdateCommunityDto,
+} from './dto';
 import { UsersService } from '../users/users.service';
 import { NotificationType, RequestUser, Role } from '../../common/types';
 import { CommunityRepository } from './repository/community.repository';
@@ -81,6 +85,17 @@ export class CommunitiesService {
       before += result[i].before;
     }
     return { now, before, type };
+  }
+
+  async update(communityId: string, data: UpdateCommunityDto) {
+    await this.communityRepository.findOneAndUpdate(
+      { _id: communityId },
+      {
+        $set: {
+          name: data.name,
+        },
+      },
+    );
   }
 
   async findByUser(userId: string): Promise<CommunityDocument[]> {

@@ -10,7 +10,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CreateCommunityDto, RequestToJoinDto } from './dto';
+import {
+  CreateCommunityDto,
+  RequestToJoinDto,
+  UpdateCommunityDto,
+} from './dto';
 import { CommunitiesService } from './communities.service';
 import { Roles, User } from '../../common/decorators';
 import { AuthGuard, RoleGuard } from '../auth/guards';
@@ -44,6 +48,12 @@ export class CommunitiesController {
   @Get(':id')
   async findById(@Param('id') id: string) {
     return await this.communitiesService.findById(id);
+  }
+
+  @Roles(Role.COMMUNITY_ADMIN)
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() dto: UpdateCommunityDto) {
+    return await this.communitiesService.update(id, dto);
   }
 
   @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
