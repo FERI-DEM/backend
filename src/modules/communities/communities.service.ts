@@ -369,7 +369,12 @@ export class CommunitiesService {
       await this.communityRepository.findOneAndUpdate(
         { _id: communityId },
         {
-          $push: { members: { userId: memberId, powerPlantId: powerPlantId } },
+          $push: {
+            members: {
+              userId: new mongoose.Types.ObjectId(memberId),
+              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+            },
+          },
         },
       );
     }
