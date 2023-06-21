@@ -38,6 +38,7 @@ export class CommunitiesService {
     const community = await this.communityRepository.findOne({
       _id: communityId,
       adminId,
+      // 'members.userId': memberId,
     });
 
     return !!community;
@@ -106,7 +107,7 @@ export class CommunitiesService {
   async findByUser(userId: string) {
     try {
       return await this.communityRepository.findAll({
-        'members.userId': new mongoose.Types.ObjectId(userId),
+        'members.userId': userId,
       });
     } catch (e) {
       throw new BadRequestException(e);
@@ -217,7 +218,7 @@ export class CommunitiesService {
 
     const community = await this.communityRepository.findOne({
       _id: communityId,
-      'members.userId': new mongoose.Types.ObjectId(memberId),
+      'members.userId': memberId,
     });
 
     if (!community) {
@@ -240,8 +241,8 @@ export class CommunitiesService {
         {
           $pull: {
             members: {
-              userId: new mongoose.Types.ObjectId(memberId),
-              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+              userId: memberId,
+              powerPlantId: powerPlantId,
             },
           },
         },
@@ -354,7 +355,7 @@ export class CommunitiesService {
     for (const powerPlantId of powerPlants) {
       const community = await this.communityRepository.findOne({
         _id: communityId,
-        'members.powerPlantId': new mongoose.Types.ObjectId(powerPlantId),
+        'members.powerPlantId': powerPlantId,
       });
 
       if (community) {
@@ -371,8 +372,8 @@ export class CommunitiesService {
         {
           $push: {
             members: {
-              userId: new mongoose.Types.ObjectId(memberId),
-              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+              userId: memberId,
+              powerPlantId: powerPlantId,
             },
           },
         },
@@ -426,8 +427,8 @@ export class CommunitiesService {
         {
           $pull: {
             members: {
-              userId: new mongoose.Types.ObjectId(memberId),
-              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+              userId: memberId,
+              powerPlantId: powerPlantId,
             },
           },
         },
