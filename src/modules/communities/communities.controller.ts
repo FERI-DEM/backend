@@ -3,13 +3,14 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Patch,
   Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
   CreateCommunityDto,
   RequestToJoinDto,
@@ -138,8 +139,16 @@ export class CommunitiesController {
 
   @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
   @Get('predict-power-production/:id')
-  async getCommunityPredictPowerProduction(@Param('id') id: string) {
-    return await this.communitiesService.predict(id);
+  @ApiHeader({
+    name: 'TimezoneOffset',
+    description: 'Timezone offset in hours',
+    required: false,
+  })
+  async getCommunityPredictPowerProduction(
+    @Param('id') id: string,
+    @Headers('TimezoneOffset') timezoneOffset?: number,
+  ) {
+    return await this.communitiesService.predict(id, timezoneOffset);
   }
 
   @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
@@ -152,5 +161,15 @@ export class CommunitiesController {
   @Get('current-production/:id')
   async getCurrentProduction(@Param('id') id: string) {
     return await this.communitiesService.getCurrentProduction(id);
+  }
+
+  @Roles(Role.COMMUNITY_MEMBER, Role.COMMUNITY_ADMIN)
+  @Get('history/:id')
+  async getHistory(
+    @Param('id') id: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    return await this.communitiesService.getHistory(id, dateFrom, dateTo);
   }
 }

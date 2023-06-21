@@ -1,25 +1,15 @@
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import {
-  CreateCommunityDto,
-  RequestToJoinDto,
-  UpdateCommunityDto,
-} from './dto';
-import { UsersService } from '../users/users.service';
-import { NotificationType, RequestUser, Role } from '../../common/types';
-import { CommunityRepository } from './repository/community.repository';
-import { CommunityDocument } from './schemas/community.schema';
-import mongoose from 'mongoose';
-import { Community } from './types/community.types';
-import { PowerPlantsService } from '../power-plants/power-plants.service';
-import { NotificationsService } from '../../common/services';
-import { ProcessRequestDto } from './dto/process-request.dto';
-import { Statistics } from '../power-plants/types';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
+import { CreateCommunityDto, RequestToJoinDto, UpdateCommunityDto } from "./dto";
+import { UsersService } from "../users/users.service";
+import { NotificationType, RequestUser, Role } from "../../common/types";
+import { CommunityRepository } from "./repository/community.repository";
+import { CommunityDocument } from "./schemas/community.schema";
+import mongoose from "mongoose";
+import { Community } from "./types/community.types";
+import { PowerPlantsService } from "../power-plants/power-plants.service";
+import { NotificationsService } from "../../common/services";
+import { ProcessRequestDto } from "./dto/process-request.dto";
+import { Statistics } from "../power-plants/types";
 
 @Injectable()
 export class CommunitiesService {
@@ -466,14 +456,14 @@ export class CommunitiesService {
     return true;
   }
 
-  async predict(communityId: string) {
+  async predict(communityId: string, timezoneOffset?: number) {
     const community = await this.findById(communityId);
     const powerPlants = community.members.map((m) => m.powerPlantId.toString());
 
     const predictions = (
       await Promise.all(
         powerPlants.map((powerPlantId) =>
-          this.powerPlantsService.predict(powerPlantId),
+          this.powerPlantsService.predict(powerPlantId, timezoneOffset),
         ),
       )
     ).flat();
@@ -559,5 +549,31 @@ export class CommunitiesService {
       powerPlants: currentProduction,
       production: productionSum,
     };
+  }
+
+  async getHistory(id: string, dateFrom?: string, dateTo?: string) {
+    const community = await this.findById(id);
+    const powerPlants = community.members.map((m) => m.powerPlantId.toString());
+    const history = await this.powerPlantsService.history(
+      powerPlants,
+      dateFrom,
+      dateTo,
+    );
+    const resultsMap = new Map<number, number>();
+    history.map((historicalData) => {
+      const timestamp = historicalData.timestamp;
+      const power = historicalData.predictedPower;
+      if (resultsMap.has(timestamp)) {
+        const currentPower = resultsMap.get(timestamp);
+        resultsMap.set(timestamp, currentPower + power);
+      } else {
+        resultsMap.set(timestamp, power);
+      }
+    });
+
+    return Array.from(resultsMap, ([timestamp, predictedPower]) => ({
+      timestamp,
+      predictedPower,
+    }));
   }
 }
