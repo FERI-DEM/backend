@@ -107,7 +107,7 @@ export class CommunitiesService {
   async findByUser(userId: string) {
     try {
       return await this.communityRepository.findAll({
-        'members.userId': userId,
+        'members.userId': new mongoose.Types.ObjectId(userId),
       });
     } catch (e) {
       throw new BadRequestException(e);
@@ -218,7 +218,7 @@ export class CommunitiesService {
 
     const community = await this.communityRepository.findOne({
       _id: communityId,
-      'members.userId': memberId,
+      'members.userId': new mongoose.Types.ObjectId(memberId),
     });
 
     if (!community) {
@@ -241,8 +241,8 @@ export class CommunitiesService {
         {
           $pull: {
             members: {
-              userId: memberId,
-              powerPlantId: powerPlantId,
+              userId: new mongoose.Types.ObjectId(memberId),
+              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
             },
           },
         },
@@ -355,7 +355,7 @@ export class CommunitiesService {
     for (const powerPlantId of powerPlants) {
       const community = await this.communityRepository.findOne({
         _id: communityId,
-        'members.powerPlantId': powerPlantId,
+        'members.powerPlantId': new mongoose.Types.ObjectId(powerPlantId),
       });
 
       if (community) {
@@ -372,8 +372,8 @@ export class CommunitiesService {
         {
           $push: {
             members: {
-              userId: memberId,
-              powerPlantId: powerPlantId,
+              userId: new mongoose.Types.ObjectId(memberId),
+              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
             },
           },
         },
@@ -427,8 +427,8 @@ export class CommunitiesService {
         {
           $pull: {
             members: {
-              userId: memberId,
-              powerPlantId: powerPlantId,
+              userId: new mongoose.Types.ObjectId(memberId),
+              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
             },
           },
         },
