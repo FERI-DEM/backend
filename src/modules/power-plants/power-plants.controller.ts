@@ -136,4 +136,10 @@ export class PowerPlantsController {
       timezoneOffset,
     );
   }
+
+  @Roles(Role.POWER_PLANT_OWNER)
+  @Get('production-by-month/:id')
+  async productionByMonth(@Param('id') powerPlantId: string) {
+    return await this.powerPlantService.getProductionByMonth(powerPlantId);
+  }
 }
