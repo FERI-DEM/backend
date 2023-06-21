@@ -456,5 +456,6 @@ export class PowerPlantsService {
         });
       }
     }
+    return result;
   }
 }
