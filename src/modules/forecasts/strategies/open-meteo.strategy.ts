@@ -139,14 +139,8 @@ export class OpenMeteoAPI implements GetSolarRadiationInterface {
       temperature_2m_min: dailyData.temperature_2m_min[i],
       sunrise: dailyData.sunrise[i],
       sunset: dailyData.sunset[i],
-      hourly: {
-        time: hourlyData.time,
-        weathercode: hourlyData.weathercode,
-      },
     }));
 
-    const weatherWidgetWmo = addDescToData(weatherWidget, wmo);
-
-    return weatherWidgetWmo;
+    return addDescToData(weatherWidget, wmo, hourlyData);
   }
 }

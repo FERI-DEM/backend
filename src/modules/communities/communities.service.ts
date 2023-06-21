@@ -217,7 +217,7 @@ export class CommunitiesService {
 
     const community = await this.communityRepository.findOne({
       _id: communityId,
-      'members.userId': memberId,
+      'members.userId': new mongoose.Types.ObjectId(memberId),
     });
 
     if (!community) {
@@ -239,7 +239,10 @@ export class CommunitiesService {
         { _id: communityId },
         {
           $pull: {
-            members: { userId: memberId, powerPlantId: powerPlantId },
+            members: {
+              userId: new mongoose.Types.ObjectId(memberId),
+              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+            },
           },
         },
       );
@@ -351,7 +354,7 @@ export class CommunitiesService {
     for (const powerPlantId of powerPlants) {
       const community = await this.communityRepository.findOne({
         _id: communityId,
-        'members.powerPlantId': powerPlantId,
+        'members.powerPlantId': new mongoose.Types.ObjectId(powerPlantId),
       });
 
       if (community) {
@@ -366,7 +369,12 @@ export class CommunitiesService {
       await this.communityRepository.findOneAndUpdate(
         { _id: communityId },
         {
-          $push: { members: { userId: memberId, powerPlantId: powerPlantId } },
+          $push: {
+            members: {
+              userId: new mongoose.Types.ObjectId(memberId),
+              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+            },
+          },
         },
       );
     }
@@ -406,7 +414,9 @@ export class CommunitiesService {
       powerPlantId: string,
       community: CommunityDocument,
     ): boolean => {
-      return community.members.some((p) => p.powerPlantId === powerPlantId);
+      return community.members.some(
+        (p) => p.powerPlantId.toString() === powerPlantId.toString(),
+      );
     };
 
     for (const powerPlantId of powerPlants) {
@@ -415,7 +425,10 @@ export class CommunitiesService {
         { _id: communityId },
         {
           $pull: {
-            members: { userId: memberId, powerPlantId: powerPlantId },
+            members: {
+              userId: new mongoose.Types.ObjectId(memberId),
+              powerPlantId: new mongoose.Types.ObjectId(powerPlantId),
+            },
           },
         },
       );
@@ -452,7 +465,7 @@ export class CommunitiesService {
 
   async predict(communityId: string) {
     const community = await this.findById(communityId);
-    const powerPlants = community.members.map((m) => m.powerPlantId);
+    const powerPlants = community.members.map((m) => m.powerPlantId.toString());
 
     const predictions = (
       await Promise.all(
@@ -511,7 +524,7 @@ export class CommunitiesService {
 
     const predictions = await Promise.all(
       community.members.map((member) =>
-        this.powerPlantsService.predictByDays(member.powerPlantId),
+        this.powerPlantsService.predictByDays(member.powerPlantId.toString()),
       ),
     );
 
