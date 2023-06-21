@@ -144,7 +144,7 @@ describe('CommunitiesService test', () => {
     const powerPlantId = powerPlant._id.toString();
 
     const community = await communitiesRepository.create({
-      name: 'test',
+      name: faker.company.name(),
       adminId,
       members: [
         { userId: adminId, powerPlantId: '' },
@@ -160,9 +160,9 @@ describe('CommunitiesService test', () => {
     );
     const member = await userRepository.findById(memberId);
     const updateCom = await communitiesRepository.findById(community.id);
-    expect(updateCom.members.length).toBe(1);
-    expect(member.roles.includes(Role.POWER_PLANT_OWNER)).toBeTruthy();
     expect(success).toBeTruthy();
+    expect(updateCom.members.length).toBe(1);
+    expect(member.roles.includes(Role.COMMUNITY_MEMBER)).toBeFalsy();
   });
   it('should fail to remove a member from community because user is not admin', async () => {
     const community = await communitiesRepository.create({

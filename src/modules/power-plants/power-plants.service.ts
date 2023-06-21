@@ -431,4 +431,31 @@ export class PowerPlantsService {
       production: currPrediction,
     };
   }
+
+  async getProductionByMonth(powerPlantId: string) {
+    const historicalData = await this.history([powerPlantId]);
+    const result: {
+      month: number;
+      year: number;
+      production: number;
+    }[] = [];
+
+    for (let i = 0; i < historicalData.length; i++) {
+      const date = new Date(historicalData[i].timestamp);
+      const month = date.getMonth();
+      const year = date.getFullYear();
+      const production = historicalData[i].predictedPower;
+      const found = result.find((r) => r.month === month && r.year === year);
+      if (found) {
+        found.production += production;
+      } else {
+        result.push({
+          month: month,
+          year: year,
+          production: production,
+        });
+      }
+    }
+    return result.filter((r) => r.production > 0);
+  }
 }

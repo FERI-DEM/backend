@@ -28,6 +28,7 @@ export class CommunitiesService {
     const community = await this.communityRepository.findOne({
       _id: communityId,
       adminId,
+      // 'members.userId': memberId,
     });
 
     return !!community;
@@ -93,13 +94,10 @@ export class CommunitiesService {
     });
   }
 
-  async findByUser(userId: string): Promise<CommunityDocument[]> {
+  async findByUser(userId: string) {
     try {
       return await this.communityRepository.findAll({
-        $or: [
-          { 'members.userId': new mongoose.Types.ObjectId(userId) },
-          { adminId: userId },
-        ],
+        'members.userId': new mongoose.Types.ObjectId(userId),
       });
     } catch (e) {
       throw new BadRequestException(e);
