@@ -456,6 +456,6 @@ export class PowerPlantsService {
         });
       }
     }
-    return result;
+    return result.filter((r) => r.production > 0);
   }
 }
