@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
   '@nestjs/axios':
     specifier: ^2.0.0
@@ -15,7 +19,7 @@ dependencies:
     version: 9.0.0(@nestjs/common@9.0.0)(@nestjs/platform-express@9.0.0)(reflect-metadata@0.1.13)(rxjs@7.2.0)
   '@nestjs/mongoose':
     specifier: ^9.2.1
-    version: 9.2.1(@nestjs/common@9.0.0)(@nestjs/core@9.0.0)(mongoose@6.10.0)(reflect-metadata@0.1.13)(rxjs@7.2.0)
+    version: 9.2.1(@nestjs/common@9.0.0)(@nestjs/core@9.0.0)(mongoose@6.11.3)(reflect-metadata@0.1.13)(rxjs@7.2.0)
   '@nestjs/platform-express':
     specifier: ^9.0.0
     version: 9.0.0(@nestjs/common@9.0.0)(@nestjs/core@9.0.0)
@@ -59,8 +63,8 @@ dependencies:
     specifier: ^6.0.1
     version: 6.0.1
   mongoose:
-    specifier: ^6.10.0
-    version: 6.10.0
+    specifier: ^6.11.3
+    version: 6.11.3
   reflect-metadata:
     specifier: ^0.1.13
     version: 0.1.13
@@ -1973,7 +1977,7 @@ packages:
       reflect-metadata: 0.1.13
     dev: false
 
-  /@nestjs/mongoose@9.2.1(@nestjs/common@9.0.0)(@nestjs/core@9.0.0)(mongoose@6.10.0)(reflect-metadata@0.1.13)(rxjs@7.2.0):
+  /@nestjs/mongoose@9.2.1(@nestjs/common@9.0.0)(@nestjs/core@9.0.0)(mongoose@6.11.3)(reflect-metadata@0.1.13)(rxjs@7.2.0):
     resolution: {integrity: sha512-tMK5kKFjQnNVhqJDw1wa352z+VsODOFznTn74xSzrziof03qS+O6rLU4q1kMx0B4AmFbADf03GOdpvBc9bMWqw==}
     peerDependencies:
       '@nestjs/common': ^8.0.0 || ^9.0.0
@@ -1984,7 +1988,7 @@ packages:
     dependencies:
       '@nestjs/common': 9.0.0(class-transformer@0.5.1)(class-validator@0.14.0)(reflect-metadata@0.1.13)(rxjs@7.2.0)
       '@nestjs/core': 9.0.0(@nestjs/common@9.0.0)(@nestjs/platform-express@9.0.0)(reflect-metadata@0.1.13)(rxjs@7.2.0)
-      mongoose: 6.10.0
+      mongoose: 6.11.3
       reflect-metadata: 0.1.13
       rxjs: 7.2.0
     dev: false
@@ -5652,8 +5656,8 @@ packages:
       whatwg-url: 11.0.0
     dev: false
 
-  /mongodb@4.14.0:
-    resolution: {integrity: sha512-coGKkWXIBczZPr284tYKFLg+KbGPPLlSbdgfKAb6QqCFt5bo5VFZ50O3FFzsw4rnkqjwT6D8Qcoo9nshYKM7Mg==}
+  /mongodb@4.16.0:
+    resolution: {integrity: sha512-0EB113Fsucaq1wsY0dOhi1fmZOwFtLOtteQkiqOXGklvWMnSH3g2QS53f0KTP+/6qOkuoXE2JksubSZNmxeI+g==}
     engines: {node: '>=12.9.0'}
     dependencies:
       bson: 4.7.2
@@ -5666,13 +5670,13 @@ packages:
       - aws-crt
     dev: false
 
-  /mongoose@6.10.0:
-    resolution: {integrity: sha512-0zrKDEnmNscYyAyN94smo2LlJ63gaezKHpHM+KQ+6EiAgAnah5Kt3hQSYzOTQX/63YNdT1oJXiLlB5LqTdcjUw==}
+  /mongoose@6.11.3:
+    resolution: {integrity: sha512-M1Y5PjttgV51YDa30u7GVMVypQSlNZF/jUhlzTBAmaz5C9FvOr8eih/VLhhO7xtTSlcVTFQS1dqlQNMbtfUowQ==}
     engines: {node: '>=12.0.0'}
     dependencies:
       bson: 4.7.2
       kareem: 2.5.1
-      mongodb: 4.14.0
+      mongodb: 4.16.0
       mpath: 0.9.0
       mquery: 4.0.3
       ms: 2.1.3
